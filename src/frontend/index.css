@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Fonts ──────────────────────────────────────────────────────── */
+@font-face {
+  font-family: "Cabinet Grotesk";
+  src: url("/assets/fonts/CabinetGrotesk-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/assets/fonts/BricolageGrotesque-Variable.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("/assets/fonts/GeneralSans-Variable.woff2") format("woff2");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+
+    /* ─── Core palette: Deep Navy + Crimson Red ─── */
+    --background: 0.97 0.005 250;
+    --foreground: 0.16 0.02 265;
+
+    --card: 1 0 0;
+    --card-foreground: 0.16 0.02 265;
+
+    --popover: 1 0 0;
+    --popover-foreground: 0.16 0.02 265;
+
+    /* Navy primary */
+    --primary: 0.22 0.055 264;
+    --primary-foreground: 0.98 0 0;
+
+    /* Crimson red accent */
+    --accent: 0.52 0.21 26;
+    --accent-foreground: 0.98 0 0;
+
+    --secondary: 0.93 0.01 250;
+    --secondary-foreground: 0.22 0.055 264;
+
+    --muted: 0.94 0.008 250;
+    --muted-foreground: 0.5 0.02 265;
+
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 0.985 0 0;
+
+    --border: 0.88 0.01 250;
+    --input: 0.88 0.01 250;
+    --ring: 0.52 0.21 26;
+
+    /* Brand colors */
+    --navy: 0.22 0.055 264;
+    --navy-dark: 0.14 0.04 264;
+    --navy-deeper: 0.10 0.035 264;
+    --crimson: 0.52 0.21 26;
+    --crimson-dark: 0.42 0.19 26;
+    --gold: 0.75 0.12 85;
+
+    --chart-1: 0.646 0.222 41.116;
+    --chart-2: 0.6 0.118 184.704;
+    --chart-3: 0.398 0.07 227.392;
+    --chart-4: 0.828 0.189 84.429;
+    --chart-5: 0.769 0.188 70.08;
+
+    --sidebar: 0.985 0 0;
+    --sidebar-foreground: 0.145 0 0;
+    --sidebar-primary: 0.205 0 0;
+    --sidebar-primary-foreground: 0.985 0 0;
+    --sidebar-accent: 0.97 0 0;
+    --sidebar-accent-foreground: 0.205 0 0;
+    --sidebar-border: 0.922 0 0;
+    --sidebar-ring: 0.708 0 0;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "General Sans", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* ─── Custom Utilities ──────────────────────────────────────────── */
+@layer utilities {
+  .text-navy { color: oklch(var(--navy)); }
+  .text-crimson { color: oklch(var(--crimson)); }
+  .text-gold { color: oklch(var(--gold)); }
+  .bg-navy { background-color: oklch(var(--navy)); }
+  .bg-navy-dark { background-color: oklch(var(--navy-dark)); }
+  .bg-navy-deeper { background-color: oklch(var(--navy-deeper)); }
+  .bg-crimson { background-color: oklch(var(--crimson)); }
+  .bg-crimson-dark { background-color: oklch(var(--crimson-dark)); }
+  .border-navy { border-color: oklch(var(--navy)); }
+  .border-crimson { border-color: oklch(var(--crimson)); }
+
+  .section-divider {
+    @apply w-16 h-1 bg-crimson rounded-full mb-4;
+  }
+
+  .nav-link {
+    @apply relative font-medium text-sm tracking-wide transition-colors duration-200;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 w-0 h-0.5 bg-crimson transition-all duration-300;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+}
