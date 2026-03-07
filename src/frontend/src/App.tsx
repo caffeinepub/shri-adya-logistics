@@ -7,10 +7,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { useActor } from "@/hooks/useActor";
 import { useMutation } from "@tanstack/react-query";
 import {
+  Link,
+  Outlet,
+  RouterProvider,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  useNavigate,
+} from "@tanstack/react-router";
+import {
   AlertCircle,
+  ArrowRight,
   Award,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   Facebook,
   Instagram,
   Leaf,
@@ -22,25 +33,24 @@ import {
   Phone,
   Send,
   Shield,
+  Star,
   Target,
   Truck,
   Twitter,
   Users,
   X,
+  Youtube,
+  Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-/* ─── Types ─────────────────────────────────────────────────────── */
-interface ContactFormData {
-  name: string;
-  email: string;
-  message: string;
-}
+/* ─────────────────────────────────────────────────────────────── */
+/*  SHARED UTILITIES                                               */
+/* ─────────────────────────────────────────────────────────────── */
 
-/* ─── Fade-in on scroll hook ─────────────────────────────────────── */
-function useFadeInView(threshold = 0.15) {
+function useFadeInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -61,1180 +71,18 @@ function useFadeInView(threshold = 0.15) {
   return { ref, visible };
 }
 
-/* ─── Navbar ────────────────────────────────────────────────────── */
-const NAV_ITEMS = [
-  { label: "Home", href: "#home", ocid: "nav.home.link" },
-  { label: "About", href: "#about", ocid: "nav.about.link" },
-  { label: "Services", href: "#services", ocid: "nav.services.link" },
-  { label: "Clients", href: "#clients", ocid: "nav.clients.link" },
-  { label: "Resources", href: "#resources", ocid: "nav.resources.link" },
-  { label: "Contact Us", href: "#contact", ocid: "nav.contact.link" },
-];
-
-function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  function handleNavClick(href: string) {
-    setIsOpen(false);
-    const id = href.replace("#", "");
-    const el = document.getElementById(id);
-    if (el) {
-      const offset = 80;
-      const top = el.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
+function scrollToSection(id: string) {
+  const el = document.getElementById(id);
+  if (el) {
+    const top = el.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top, behavior: "smooth" });
   }
-
-  return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-white/95 backdrop-blur-sm shadow-md"
-          : "bg-white/90 backdrop-blur-sm shadow-sm"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <button
-            type="button"
-            onClick={() => handleNavClick("#home")}
-            className="flex items-center gap-3 focus:outline-none"
-          >
-            <img
-              src="/assets/uploads/Old-Logo-1.png"
-              alt="Shri Adya Logistics Logo"
-              className="h-10 lg:h-12 w-auto object-contain"
-            />
-            <div className="hidden sm:block">
-              <p className="font-display font-bold text-navy text-sm lg:text-base leading-tight">
-                SHRI ADYA LOGISTICS
-              </p>
-              <p className="text-xs text-muted-foreground tracking-wide leading-tight">
-                We are always there for you
-              </p>
-            </div>
-          </button>
-
-          {/* Desktop Nav */}
-          <nav
-            className="hidden lg:flex items-center gap-8"
-            aria-label="Main navigation"
-          >
-            {NAV_ITEMS.map((item) => (
-              <button
-                type="button"
-                key={item.label}
-                data-ocid={item.ocid}
-                onClick={() => handleNavClick(item.href)}
-                className="nav-link text-foreground/80 hover:text-navy font-heading font-semibold text-sm"
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Mobile menu button */}
-          <button
-            type="button"
-            className="lg:hidden p-2 rounded-md text-navy hover:bg-navy/10 transition-colors"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-            aria-expanded={isOpen}
-          >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="lg:hidden border-t border-border bg-white shadow-lg overflow-hidden"
-          >
-            <nav className="px-4 py-4 flex flex-col gap-1">
-              {NAV_ITEMS.map((item) => (
-                <button
-                  type="button"
-                  key={item.label}
-                  data-ocid={item.ocid}
-                  onClick={() => handleNavClick(item.href)}
-                  className="text-left py-3 px-4 rounded-md font-heading font-semibold text-sm text-foreground/80 hover:text-navy hover:bg-navy/5 transition-colors"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
-  );
 }
 
-/* ─── Hero Section ──────────────────────────────────────────────── */
-function HeroSection() {
-  function handleContactClick() {
-    const el = document.getElementById("contact");
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  }
+/* ─────────────────────────────────────────────────────────────── */
+/*  WHATSAPP ICON                                                  */
+/* ─────────────────────────────────────────────────────────────── */
 
-  return (
-    <section
-      id="home"
-      className="relative min-h-[90vh] flex items-center"
-      style={{
-        backgroundImage: `url('/assets/generated/hero-bg.dim_1600x700.jpg')`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-navy-deeper/92 via-navy-dark/80 to-navy/60" />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="max-w-3xl"
-        >
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="inline-flex items-center gap-2 bg-crimson/20 border border-crimson/40 text-crimson px-4 py-1.5 rounded-full text-sm font-heading font-semibold tracking-wide mb-6 backdrop-blur-sm"
-          >
-            <span className="w-2 h-2 rounded-full bg-crimson animate-pulse" />
-            Established 2017 · Jharkhand, Odisha & West Bengal
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.05] tracking-tight mb-4"
-          >
-            Welcome to
-            <br />
-            <span className="text-crimson">SHRI ADYA</span>
-            <br />
-            LOGISTICS
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-            className="text-xl sm:text-2xl font-heading font-light text-white/90 italic mb-6"
-          >
-            "We are always there for you."
-          </motion.p>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.5 }}
-            className="text-base sm:text-lg text-white/75 leading-relaxed mb-8 max-w-2xl"
-          >
-            We offer comprehensive mining solutions tailored to meet your
-            specific mining needs. Shri Adya Logistics is a leading player in
-            the mining sector in the mineral rich states of Jharkhand, Odisha
-            and West Bengal. The company was established in the year 2017 by
-            young entrepreneurs with technical background.
-          </motion.p>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.55 }}
-            className="text-sm text-white/55 mb-8 font-body"
-          >
-            Registered under Enterprise firm &middot; Proprietary: Anirudh Bose
-            &middot; Registered: 26 July 2017
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.65 }}
-            className="flex flex-col sm:flex-row gap-4"
-          >
-            <Button
-              data-ocid="hero.contact.primary_button"
-              onClick={handleContactClick}
-              size="lg"
-              className="bg-crimson hover:bg-crimson-dark text-white font-heading font-bold px-8 py-4 text-base rounded-sm tracking-wide transition-all duration-200 hover:scale-[1.02] shadow-lg"
-            >
-              Contact Us
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => {
-                const el = document.getElementById("about");
-                if (el)
-                  window.scrollTo({
-                    top: el.getBoundingClientRect().top + window.scrollY - 80,
-                    behavior: "smooth",
-                  });
-              }}
-              className="border-white/40 text-white hover:bg-white/10 font-heading font-semibold px-8 py-4 text-base rounded-sm tracking-wide backdrop-blur-sm"
-            >
-              Learn More
-              <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
-    </section>
-  );
-}
-
-/* ─── Section wrapper ────────────────────────────────────────────── */
-function SectionTitle({
-  eyebrow,
-  title,
-  subtitle,
-}: { eyebrow?: string; title: string; subtitle?: string }) {
-  return (
-    <div className="text-center mb-12 lg:mb-16">
-      {eyebrow && (
-        <p className="text-crimson font-heading font-bold text-sm tracking-[0.15em] uppercase mb-3">
-          {eyebrow}
-        </p>
-      )}
-      <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
-        {title}
-      </h2>
-      {subtitle && (
-        <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-          {subtitle}
-        </p>
-      )}
-      <div className="section-divider mx-auto mt-5" />
-    </div>
-  );
-}
-
-/* ─── About Section ─────────────────────────────────────────────── */
-const CORE_VALUES = [
-  {
-    icon: Shield,
-    title: "Safety",
-    desc: "Safety is our first priority. We achieve this through training our drivers and employees to focus on driver compliance with all applicable government requirements.",
-  },
-  {
-    icon: Award,
-    title: "Integrity",
-    desc: "What we say, we do. We respect the rights of all people and value their diversity. We protect the culture and heritage of the environments and communities in which we operate.",
-  },
-  {
-    icon: Target,
-    title: "Excellence",
-    desc: "We strive for excellence in everything we do, taking pride in our people, plant and process. We exceed customer expectations through innovation and continuous improvement.",
-  },
-  {
-    icon: Leaf,
-    title: "Environment",
-    desc: "We are committed to a sustainable future. Effective environmental control is integral to our operations, with comprehensive management plans for each operation.",
-  },
-];
-
-const TIMELINE_EVENTS = [
-  {
-    date: "29 Sep 2014",
-    title: "Company Founded",
-    desc: "Anirudh Bose established the company, initially without operations.",
-  },
-  {
-    date: "17 Nov 2014",
-    title: "First Work Order",
-    desc: "Secured first work order for explosive transportation. Operating as sub-contractor alongside cousin Sabyasachi Bose as partner.",
-  },
-  {
-    date: "2015–2016",
-    title: "Sole Leadership",
-    desc: "Sabyasachi Bose stepped down. Anirudh Bose took full charge and completed orders successfully.",
-  },
-  {
-    date: "26 Jul 2017",
-    title: "Official Registration",
-    desc: "Registered as 'SHRI ADYA LOGISTICS' under Enterprise firm after three successful years.",
-  },
-];
-
-function AboutSection() {
-  const { ref, visible } = useFadeInView();
-
-  return (
-    <section id="about" className="py-20 lg:py-28 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionTitle
-          eyebrow="Who We Are"
-          title="About Us"
-          subtitle="A trusted name in Explosive Transport and Blasting Contract solutions across Eastern India."
-        />
-
-        {/* Corporate Profile */}
-        <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 30 }}
-          animate={visible ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7 }}
-          className="grid lg:grid-cols-2 gap-12 items-center mb-20"
-        >
-          <div>
-            <p className="text-crimson font-heading font-bold text-sm tracking-[0.15em] uppercase mb-3">
-              Corporate Profile
-            </p>
-            <h3 className="font-display text-2xl lg:text-3xl font-bold text-navy mb-5 leading-snug">
-              Leading the Way in Mining Solutions
-            </h3>
-            <p className="text-foreground/75 leading-relaxed mb-4">
-              Welcome to Shri Adya Logistics, a reputed Explosive Transport and
-              blasting contract solution-based company in Jharkhand, Odisha and
-              West Bengal. Established on 29 September 2014 by Mr. Anirudh Bose,
-              we have grown into a highly renowned company backed by vast
-              experience in raising, crushing, excavation, transportation and
-              sales.
-            </p>
-            <p className="text-foreground/75 leading-relaxed mb-6">
-              Our company has deployed excavators, crushing plants, dozers,
-              hyva, tippers and various other equipment in projects across the
-              region. Through responsible Explosive Transport and blasting
-              contract solution services, we create stronger business value for
-              all our customers.
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: "Est.", value: "2014" },
-                { label: "States", value: "3" },
-                { label: "Registered", value: "2017" },
-                { label: "Equipment", value: "6+" },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-navy/5 border border-navy/10 rounded-lg p-4 text-center"
-                >
-                  <p className="font-display text-2xl font-bold text-crimson">
-                    {stat.value}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-heading font-semibold mt-1">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="bg-navy rounded-2xl p-8 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-crimson/10 rounded-full -translate-y-24 translate-x-24" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16" />
-            <div className="relative z-10">
-              <blockquote className="text-lg font-display font-medium italic leading-relaxed text-white/90 mb-6">
-                "As long as you are the last man standing and are adding value,
-                you would continue to grow. The last man standing has the best
-                chance at being the first man forward."
-              </blockquote>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-crimson flex items-center justify-center font-display font-bold text-white">
-                  AB
-                </div>
-                <div>
-                  <p className="font-heading font-bold text-white">
-                    Anirudh Bose
-                  </p>
-                  <p className="text-white/60 text-sm">
-                    Proprietor, Shri Adya Logistics
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Timeline */}
-        <div className="mb-20">
-          <div className="text-center mb-10">
-            <p className="text-crimson font-heading font-bold text-sm tracking-[0.15em] uppercase mb-2">
-              Our Journey
-            </p>
-            <h3 className="font-display text-2xl lg:text-3xl font-bold text-navy">
-              Our History
-            </h3>
-          </div>
-          <div className="relative">
-            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-navy/20 md:-translate-x-px" />
-            <div className="space-y-8 md:space-y-0">
-              {TIMELINE_EVENTS.map((event, i) => (
-                <motion.div
-                  key={event.date}
-                  initial={{ opacity: 0, x: i % 2 === 0 ? -30 : 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
-                  className={`relative flex md:items-center gap-6 md:gap-0 ${
-                    i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
-                  } pl-12 md:pl-0`}
-                >
-                  {/* Dot */}
-                  <div className="absolute left-3 md:left-1/2 top-1.5 md:top-1/2 w-3 h-3 rounded-full bg-crimson border-2 border-white shadow md:-translate-x-1.5 md:-translate-y-1.5 z-10" />
-                  {/* Content */}
-                  <div
-                    className={`md:w-1/2 ${i % 2 === 0 ? "md:pr-12 md:text-right" : "md:pl-12"}`}
-                  >
-                    <span className="inline-block bg-crimson/10 text-crimson font-heading font-bold text-xs px-3 py-1 rounded-full mb-2">
-                      {event.date}
-                    </span>
-                    <h4 className="font-display font-bold text-navy text-lg">
-                      {event.title}
-                    </h4>
-                    <p className="text-foreground/65 text-sm leading-relaxed mt-1">
-                      {event.desc}
-                    </p>
-                  </div>
-                  <div className="md:w-1/2" />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Vision & Mission */}
-        <div className="grid md:grid-cols-2 gap-6 mb-20">
-          {[
-            {
-              icon: "👁️",
-              label: "Our Vision",
-              text: "We will provide the best transport system which is safe, reliable, efficient, environmentally friendly and satisfying to both users and operators.",
-              bg: "bg-navy",
-              textColor: "text-white",
-            },
-            {
-              icon: "🎯",
-              label: "Our Mission",
-              text: "To constantly seek high levels of productivity and technical efficiency; to maintain technological superiority over competitors. Customer satisfaction has always topped our priority list.",
-              bg: "bg-crimson",
-              textColor: "text-white",
-            },
-          ].map((item, i) => (
-            <motion.div
-              key={item.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.15 }}
-              className={`${item.bg} rounded-2xl p-8 ${item.textColor}`}
-            >
-              <span className="text-3xl mb-4 block">{item.icon}</span>
-              <h3 className="font-display text-xl font-bold mb-3">
-                {item.label}
-              </h3>
-              <p className="text-white/85 leading-relaxed">{item.text}</p>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Core Values */}
-        <div>
-          <div className="text-center mb-10">
-            <p className="text-crimson font-heading font-bold text-sm tracking-[0.15em] uppercase mb-2">
-              What Drives Us
-            </p>
-            <h3 className="font-display text-2xl lg:text-3xl font-bold text-navy mb-3">
-              Core Values
-            </h3>
-            <p className="text-muted-foreground max-w-xl mx-auto text-sm">
-              Shri Adya Logistics values are fundamental to the overall success
-              of our business and the foundation upon which we operate every
-              day.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {CORE_VALUES.map((val, i) => (
-              <motion.div
-                key={val.title}
-                initial={{ opacity: 0, y: 25 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="group bg-card border border-border rounded-xl p-6 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300"
-              >
-                <div className="w-12 h-12 rounded-lg bg-navy/8 flex items-center justify-center mb-4 group-hover:bg-crimson/10 transition-colors">
-                  <val.icon className="w-6 h-6 text-navy group-hover:text-crimson transition-colors" />
-                </div>
-                <h4 className="font-display font-bold text-navy mb-2">
-                  {val.title}
-                </h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {val.desc}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Services Section ─────────────────────────────────────────── */
-const SERVICES = [
-  {
-    icon: Truck,
-    title: "Explosive Transportation",
-    badge: "Core Service",
-    desc: "SHRI ADYA LOGISTICS is an Explosive Transportation Company primarily focused on site Explosive Supply for mining. We operate a well-designed, dedicated fleet of approved trucks ranging from 1 to 15 metric tons capacity.",
-    features: [
-      "All types of Explosives & Accessories",
-      "Transport to Licensed Locations",
-      "Government Overburden & Ore Transportation",
-      "Fleet: 1 MT – 15 MT capacity trucks",
-    ],
-    bg: "bg-navy",
-    accentColor: "text-gold",
-  },
-  {
-    icon: Target,
-    title: "Logistics",
-    badge: "Extended Service",
-    desc: "We transport minerals from different loading points across India, carrying out transportation from various mines. Our logistic division abides by all imperative rules and regulations per fundamental mining guidelines.",
-    features: [
-      "Mineral Transport Nationwide",
-      "Tippers & Heavy Duty Trucks",
-      "Rack Loading & Shipment",
-      "Premium Iron Ore Supply",
-    ],
-    bg: "bg-crimson",
-    accentColor: "text-white/80",
-  },
-];
-
-function ServicesSection() {
-  return (
-    <section id="services" className="py-20 lg:py-28 bg-secondary/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionTitle eyebrow="What We Do" title="Our Services" />
-
-        <div className="bg-navy/5 border border-navy/10 rounded-xl p-6 mb-10 text-center">
-          <p className="text-navy font-display font-medium text-lg italic">
-            "Service is what we sell. It is our quality of service that will set
-            us apart from our competition. We will proactively communicate with
-            our customers and drivers so their expectations are fulfilled."
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          {SERVICES.map((svc, i) => (
-            <motion.div
-              key={svc.title}
-              data-ocid={`services.item.${i + 1}`}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.15 }}
-              className={`${svc.bg} rounded-2xl p-8 lg:p-10 text-white relative overflow-hidden group hover:scale-[1.01] transition-transform duration-300 shadow-card`}
-            >
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-20 translate-x-20" />
-              <div className="relative z-10">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center">
-                    <svc.icon className="w-7 h-7 text-white" />
-                  </div>
-                  <span
-                    className={`text-xs font-heading font-bold tracking-widest uppercase ${svc.accentColor} bg-white/10 px-3 py-1 rounded-full`}
-                  >
-                    {svc.badge}
-                  </span>
-                </div>
-                <h3 className="font-display text-2xl font-bold text-white mb-4">
-                  {svc.title}
-                </h3>
-                <p className="text-white/80 leading-relaxed mb-6">{svc.desc}</p>
-                <ul className="space-y-2">
-                  {svc.features.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-center gap-2 text-sm text-white/75"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-white/60 flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Clients Section ──────────────────────────────────────────── */
-const CLIENTS = [
-  {
-    name: "Central Coal Fields Limited",
-    abbr: "CCL",
-    desc: "A Miniratna Category-I Central Public Sector Enterprise and subsidiary of Coal India Limited.",
-    category: "Public Sector · Coal",
-  },
-  {
-    name: "Damodar Valley Corporation",
-    abbr: "DVC",
-    desc: "One of India's oldest multi-purpose river valley development project, serving power and irrigation.",
-    category: "Public Sector · Power",
-  },
-  {
-    name: "BKB Transport Pvt. Ltd.",
-    abbr: "BKB",
-    desc: "A leading private transport and logistics company in the Eastern India mining sector.",
-    category: "Private Sector · Transport",
-  },
-];
-
-function ClientsSection() {
-  return (
-    <section id="clients" className="py-20 lg:py-28 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionTitle
-          eyebrow="Who We Serve"
-          title="Our Clients"
-          subtitle="Trusted by leading public and private sector organizations across Eastern India."
-        />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {CLIENTS.map((client, i) => (
-            <motion.div
-              key={client.name}
-              data-ocid={`clients.item.${i + 1}`}
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.12 }}
-            >
-              <Card className="h-full border-border hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 group overflow-hidden">
-                <CardContent className="p-6 flex flex-col h-full">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-xl bg-navy flex items-center justify-center text-white font-display font-black text-lg group-hover:bg-crimson transition-colors duration-300">
-                      {client.abbr}
-                    </div>
-                    <div>
-                      <span className="text-xs font-heading font-semibold text-crimson bg-crimson/10 px-2 py-0.5 rounded-full">
-                        {client.category}
-                      </span>
-                    </div>
-                  </div>
-                  <h3 className="font-display font-bold text-navy text-lg mb-2 leading-snug">
-                    {client.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                    {client.desc}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Resources Section ─────────────────────────────────────────── */
-function ResourcesSection() {
-  return (
-    <section id="resources" className="py-20 lg:py-28 bg-navy">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 lg:mb-16">
-          <p className="text-crimson font-heading font-bold text-sm tracking-[0.15em] uppercase mb-3">
-            Our Strength
-          </p>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
-            Resources
-          </h2>
-          <div className="w-16 h-1 bg-crimson rounded-full mx-auto mt-5" />
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          {[
-            {
-              icon: Users,
-              title: "Management Team",
-              desc: "The diversity of techno-managerial skills, coupled with the depth of specialist mining skills held by the executive team provides Shri Adya Logistics with a solid platform for achieving aggressive business performance and growth objectives set by the boards.",
-              stats: [
-                { label: "Technical Expertise", value: "Deep" },
-                { label: "Experience", value: "10+ yrs" },
-              ],
-            },
-            {
-              icon: Shield,
-              title: "Manpower",
-              desc: "We've earned our reputation as a respected employer by serving almost every Mining & Exploration customer representing through global portfolio of technology & operations. As the Company's steadfast and unwavering commitment to the Mining, Shri Adya Logistics commits its people a secure future and knowledge base.",
-              stats: [
-                { label: "Trained Drivers", value: "✓" },
-                { label: "Skilled Operators", value: "✓" },
-              ],
-            },
-          ].map((res, i) => (
-            <motion.div
-              key={res.title}
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.15 }}
-              className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-8 hover:bg-white/15 transition-colors duration-300"
-            >
-              <div className="w-14 h-14 rounded-xl bg-crimson/20 border border-crimson/30 flex items-center justify-center mb-5">
-                <res.icon className="w-7 h-7 text-crimson" />
-              </div>
-              <h3 className="font-display text-xl font-bold text-white mb-4">
-                {res.title}
-              </h3>
-              <p className="text-white/70 leading-relaxed text-sm mb-6">
-                {res.desc}
-              </p>
-              <div className="flex gap-4">
-                {res.stats.map((s) => (
-                  <div
-                    key={s.label}
-                    className="flex-1 bg-white/8 rounded-lg p-3 text-center"
-                  >
-                    <p className="font-display font-bold text-crimson text-sm">
-                      {s.value}
-                    </p>
-                    <p className="text-white/55 text-xs mt-0.5 font-heading">
-                      {s.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Contact Section ───────────────────────────────────────────── */
-function ContactSection() {
-  const { actor } = useActor();
-  const [formData, setFormData] = useState<ContactFormData>({
-    name: "",
-    email: "",
-    message: "",
-  });
-
-  const contactMutation = useMutation({
-    mutationFn: async (data: ContactFormData) => {
-      if (!actor)
-        throw new Error("Service unavailable. Please try again later.");
-      await actor.submitContactForm(data.name, data.email, data.message);
-    },
-    onSuccess: () => {
-      toast.success("Message sent! We'll get back to you soon.");
-      setFormData({ name: "", email: "", message: "" });
-    },
-    onError: (err: Error) => {
-      toast.error(err.message || "Failed to send message. Please try again.");
-    },
-  });
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (
-      !formData.name.trim() ||
-      !formData.email.trim() ||
-      !formData.message.trim()
-    ) {
-      toast.error("Please fill in all fields.");
-      return;
-    }
-    contactMutation.mutate(formData);
-  }
-
-  const CONTACT_INFO = [
-    {
-      icon: MapPin,
-      label: "Registered Office",
-      value:
-        "Bermo Magazine Loadhar Bera Basti, Bermo, Bokaro, Jharkhand 829127",
-    },
-    { icon: Phone, label: "Phone", value: "+91-9835410009" },
-    { icon: Mail, label: "Email", value: "hello@shriadyalogistics.com" },
-  ];
-
-  const SOCIAL_LINKS = [
-    {
-      icon: Facebook,
-      label: "Facebook",
-      href: "https://fb.me/shriadyalogistics",
-    },
-    {
-      icon: Instagram,
-      label: "Instagram",
-      href: "https://instagram.com/shriadyalogistics",
-    },
-    { icon: Twitter, label: "Twitter/X", href: "https://twitter.com/shriadya" },
-  ];
-
-  return (
-    <section id="contact" className="py-20 lg:py-28 bg-secondary/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionTitle
-          eyebrow="Get In Touch"
-          title="Contact Us"
-          subtitle="Have a project in mind or need more information? We'd love to hear from you."
-        />
-
-        <div className="grid lg:grid-cols-2 gap-12 items-start">
-          {/* Info */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <h3 className="font-display text-2xl font-bold text-navy mb-6">
-              Reach Out to Us
-            </h3>
-            <div className="space-y-5 mb-8">
-              {CONTACT_INFO.map((info) => (
-                <div key={info.label} className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-navy flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <info.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-heading font-bold text-crimson uppercase tracking-widest mb-0.5">
-                      {info.label}
-                    </p>
-                    <p className="text-foreground/80 text-sm leading-relaxed">
-                      {info.value}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <p className="text-xs font-heading font-bold text-navy uppercase tracking-widest mb-4">
-                Follow Us
-              </p>
-              <div className="flex gap-3">
-                {SOCIAL_LINKS.map((soc) => (
-                  <a
-                    key={soc.label}
-                    href={soc.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={soc.label}
-                    className="w-10 h-10 rounded-full bg-navy text-white flex items-center justify-center hover:bg-crimson transition-colors duration-200"
-                  >
-                    <soc.icon className="w-4 h-4" />
-                  </a>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="bg-card rounded-2xl p-8 shadow-card border border-border"
-          >
-            <form onSubmit={handleSubmit} noValidate className="space-y-5">
-              <div>
-                <Label
-                  htmlFor="contact-name"
-                  className="font-heading font-semibold text-sm text-foreground/80 mb-1.5 block"
-                >
-                  Full Name <span className="text-crimson">*</span>
-                </Label>
-                <Input
-                  id="contact-name"
-                  data-ocid="contact.name.input"
-                  type="text"
-                  placeholder="Your full name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, name: e.target.value }))
-                  }
-                  disabled={contactMutation.isPending}
-                  className="border-border focus-visible:ring-crimson rounded-md"
-                  autoComplete="name"
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="contact-email"
-                  className="font-heading font-semibold text-sm text-foreground/80 mb-1.5 block"
-                >
-                  Email Address <span className="text-crimson">*</span>
-                </Label>
-                <Input
-                  id="contact-email"
-                  data-ocid="contact.email.input"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, email: e.target.value }))
-                  }
-                  disabled={contactMutation.isPending}
-                  className="border-border focus-visible:ring-crimson rounded-md"
-                  autoComplete="email"
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="contact-message"
-                  className="font-heading font-semibold text-sm text-foreground/80 mb-1.5 block"
-                >
-                  Message <span className="text-crimson">*</span>
-                </Label>
-                <Textarea
-                  id="contact-message"
-                  data-ocid="contact.message.textarea"
-                  placeholder="Tell us about your requirements..."
-                  value={formData.message}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, message: e.target.value }))
-                  }
-                  disabled={contactMutation.isPending}
-                  rows={5}
-                  className="border-border focus-visible:ring-crimson rounded-md resize-none"
-                />
-              </div>
-
-              {/* Status surfaces */}
-              {contactMutation.isPending && (
-                <div
-                  data-ocid="contact.loading_state"
-                  className="flex items-center gap-2 text-sm text-navy/70 font-heading"
-                >
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Sending your message...</span>
-                </div>
-              )}
-              {contactMutation.isSuccess && (
-                <div
-                  data-ocid="contact.success_state"
-                  className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Message sent successfully!</span>
-                </div>
-              )}
-              {contactMutation.isError && (
-                <div
-                  data-ocid="contact.error_state"
-                  className="flex items-center gap-2 text-sm text-crimson bg-crimson/5 border border-crimson/20 rounded-md px-3 py-2"
-                >
-                  <AlertCircle className="w-4 h-4" />
-                  <span>
-                    {contactMutation.error?.message ||
-                      "Failed to send. Please try again."}
-                  </span>
-                </div>
-              )}
-
-              <Button
-                data-ocid="contact.submit_button"
-                type="submit"
-                disabled={contactMutation.isPending}
-                className="w-full bg-navy hover:bg-navy-dark text-white font-heading font-bold py-3 rounded-md tracking-wide transition-all duration-200"
-                size="lg"
-              >
-                {contactMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  "Send Message"
-                )}
-              </Button>
-            </form>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Footer ─────────────────────────────────────────────────────── */
-function Footer() {
-  const year = new Date().getFullYear();
-
-  const QUICK_LINKS = [
-    { label: "Home", href: "#home" },
-    { label: "About Us", href: "#about" },
-    { label: "Services", href: "#services" },
-    { label: "Clients", href: "#clients" },
-    { label: "Resources", href: "#resources" },
-    { label: "Contact Us", href: "#contact" },
-  ];
-
-  const SOCIAL_LINKS = [
-    {
-      icon: Facebook,
-      label: "Facebook",
-      href: "https://fb.me/shriadyalogistics",
-    },
-    {
-      icon: Instagram,
-      label: "Instagram",
-      href: "https://instagram.com/shriadyalogistics",
-    },
-    { icon: Twitter, label: "Twitter/X", href: "https://twitter.com/shriadya" },
-  ];
-
-  function handleNavClick(href: string) {
-    const id = href.replace("#", "");
-    const el = document.getElementById(id);
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  }
-
-  return (
-    <footer className="bg-navy-deeper text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-5">
-              <img
-                src="/assets/uploads/Old-Logo-1.png"
-                alt="Shri Adya Logistics Logo"
-                className="h-12 w-auto object-contain"
-              />
-              <div>
-                <p className="font-display font-bold text-white text-sm leading-tight">
-                  SHRI ADYA LOGISTICS
-                </p>
-                <p className="text-white/50 text-xs leading-tight">
-                  Enterprise · Est. 2014
-                </p>
-              </div>
-            </div>
-            <p className="text-white/65 text-sm leading-relaxed max-w-sm mb-5">
-              A leading Explosive Transport and Blasting contract solution
-              company in Jharkhand, Odisha and West Bengal. Trusted by CCL, DVC
-              and more.
-            </p>
-            <div className="flex gap-3">
-              {SOCIAL_LINKS.map((soc) => (
-                <a
-                  key={soc.label}
-                  href={soc.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={soc.label}
-                  className="w-9 h-9 rounded-full bg-white/10 text-white/60 flex items-center justify-center hover:bg-crimson hover:text-white transition-all duration-200"
-                >
-                  <soc.icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-display font-bold text-white text-sm uppercase tracking-widest mb-5">
-              Quick Links
-            </h4>
-            <ul className="space-y-3">
-              {QUICK_LINKS.map((link) => (
-                <li key={link.label}>
-                  <button
-                    type="button"
-                    onClick={() => handleNavClick(link.href)}
-                    className="text-white/60 hover:text-crimson text-sm font-heading transition-colors duration-200"
-                  >
-                    {link.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h4 className="font-display font-bold text-white text-sm uppercase tracking-widest mb-5">
-              Contact Info
-            </h4>
-            <ul className="space-y-3 text-sm text-white/60">
-              <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-crimson mt-0.5 flex-shrink-0" />
-                <span>Bermo, Bokaro, Jharkhand 829127</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-crimson flex-shrink-0" />
-                <a
-                  href="tel:+919835410009"
-                  className="hover:text-white transition-colors"
-                >
-                  +91-9835410009
-                </a>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-crimson flex-shrink-0" />
-                <a
-                  href="mailto:hello@shriadyalogistics.com"
-                  className="hover:text-white transition-colors text-xs break-all"
-                >
-                  hello@shriadyalogistics.com
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/40">
-          <p>© {year} Shri Adya Logistics. All rights reserved.</p>
-          <p>
-            Built with ♥ using{" "}
-            <a
-              href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(typeof window !== "undefined" ? window.location.hostname : "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white/60 hover:text-white transition-colors underline underline-offset-2"
-            >
-              caffeine.ai
-            </a>
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
-/* ─── WhatsApp SVG Icon ─────────────────────────────────────────── */
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -1248,36 +96,21 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-/* ─── Arattai Chat Panel ─────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────── */
+/*  FLOATING CHAT BUTTONS                                          */
+/* ─────────────────────────────────────────────────────────────── */
+
 interface ArattaiFormData {
   name: string;
   message: string;
 }
 
 function ArattaiPanel({ onClose }: { onClose: () => void }) {
-  const { actor } = useActor();
   const [formData, setFormData] = useState<ArattaiFormData>({
     name: "",
     message: "",
   });
-
-  const arattaiMutation = useMutation({
-    mutationFn: async (data: ArattaiFormData) => {
-      if (!actor)
-        throw new Error("Service unavailable. Please try again later.");
-      await actor.submitContactForm(
-        data.name,
-        "arattai@chat.com",
-        data.message,
-      );
-    },
-    onSuccess: () => {
-      setFormData({ name: "", message: "" });
-    },
-    onError: () => {
-      // error shown in UI
-    },
-  });
+  const [sent, setSent] = useState(false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -1285,12 +118,12 @@ function ArattaiPanel({ onClose }: { onClose: () => void }) {
       toast.error("Please fill in your name and message.");
       return;
     }
-    arattaiMutation.mutate(formData);
+    setSent(true);
   }
 
   return (
     <motion.div
-      data-ocid="arattai.panel"
+      data-ocid="arattai.chat.panel"
       initial={{ opacity: 0, y: 16, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 16, scale: 0.95 }}
@@ -1298,17 +131,16 @@ function ArattaiPanel({ onClose }: { onClose: () => void }) {
       className="absolute bottom-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-navy/15 overflow-hidden"
       style={{ transformOrigin: "bottom right" }}
     >
-      {/* Header */}
       <div className="bg-navy px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-crimson/30 flex items-center justify-center">
-            <MessageCircle className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
+            <MessageCircle className="w-4 h-4 text-gold" />
           </div>
           <div>
             <p className="font-display font-bold text-white text-sm leading-tight">
-              Arattai
+              Quick Chat
             </p>
-            <p className="text-white/60 text-xs">Quick Chat</p>
+            <p className="text-white/60 text-xs">We reply within hours</p>
           </div>
         </div>
         <button
@@ -1322,11 +154,9 @@ function ArattaiPanel({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
-      {/* Body */}
       <div className="p-4">
-        {arattaiMutation.isSuccess ? (
+        {sent ? (
           <motion.div
-            data-ocid="arattai.success_state"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center py-6 text-center"
@@ -1335,25 +165,27 @@ function ArattaiPanel({ onClose }: { onClose: () => void }) {
               <CheckCircle2 className="w-6 h-6 text-green-600" />
             </div>
             <p className="font-display font-bold text-navy text-sm mb-1">
-              Message Sent!
+              Message Received!
             </p>
             <p className="text-muted-foreground text-xs mb-4">
               We'll get back to you soon.
             </p>
             <button
               type="button"
-              onClick={() => arattaiMutation.reset()}
-              className="text-xs text-navy font-heading font-semibold underline underline-offset-2 hover:text-crimson transition-colors"
+              onClick={() => {
+                setSent(false);
+                setFormData({ name: "", message: "" });
+              }}
+              className="text-xs text-navy font-heading font-semibold underline underline-offset-2 hover:text-gold transition-colors"
             >
               Send another message
             </button>
           </motion.div>
         ) : (
           <form onSubmit={handleSubmit} noValidate className="space-y-3">
-            <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Send us a quick message and we'll respond shortly.
             </p>
-
             <div>
               <Label
                 htmlFor="arattai-name"
@@ -1370,12 +202,10 @@ function ArattaiPanel({ onClose }: { onClose: () => void }) {
                 onChange={(e) =>
                   setFormData((p) => ({ ...p, name: e.target.value }))
                 }
-                disabled={arattaiMutation.isPending}
                 className="h-8 text-sm border-border focus-visible:ring-navy rounded-md"
                 autoComplete="name"
               />
             </div>
-
             <div>
               <Label
                 htmlFor="arattai-message"
@@ -1391,52 +221,18 @@ function ArattaiPanel({ onClose }: { onClose: () => void }) {
                 onChange={(e) =>
                   setFormData((p) => ({ ...p, message: e.target.value }))
                 }
-                disabled={arattaiMutation.isPending}
                 rows={3}
                 className="text-sm border-border focus-visible:ring-navy rounded-md resize-none"
               />
             </div>
-
-            {/* Error state */}
-            {arattaiMutation.isError && (
-              <div
-                data-ocid="arattai.error_state"
-                className="flex items-center gap-1.5 text-xs text-crimson bg-crimson/5 border border-crimson/20 rounded-md px-2.5 py-1.5"
-              >
-                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>Failed to send. Please try again.</span>
-              </div>
-            )}
-
-            {/* Loading state */}
-            {arattaiMutation.isPending && (
-              <div
-                data-ocid="arattai.loading_state"
-                className="flex items-center gap-1.5 text-xs text-navy/60 font-heading"
-              >
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Sending...</span>
-              </div>
-            )}
-
             <Button
-              data-ocid="arattai.submit_button"
+              data-ocid="arattai.send.button"
               type="submit"
-              disabled={arattaiMutation.isPending}
               size="sm"
               className="w-full bg-navy hover:bg-navy-dark text-white font-heading font-bold text-xs rounded-md tracking-wide"
             >
-              {arattaiMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="mr-1.5 h-3.5 w-3.5" />
-                  Send Message
-                </>
-              )}
+              <Send className="mr-1.5 h-3.5 w-3.5" />
+              Send Message
             </Button>
           </form>
         )}
@@ -1445,21 +241,17 @@ function ArattaiPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
-/* ─── Floating Chat Buttons ─────────────────────────────────────── */
 function FloatingChatButtons() {
   const [arattaiOpen, setArattaiOpen] = useState(false);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-      {/* Arattai Panel */}
       <div className="relative">
         <AnimatePresence>
           {arattaiOpen && (
             <ArattaiPanel onClose={() => setArattaiOpen(false)} />
           )}
         </AnimatePresence>
-
-        {/* Arattai Button */}
         <motion.div
           initial={{ opacity: 0, scale: 0, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1470,32 +262,14 @@ function FloatingChatButtons() {
             stiffness: 260,
             damping: 20,
           }}
-          className="flex items-center gap-2"
         >
-          {/* Tooltip label */}
-          <AnimatePresence>
-            {!arattaiOpen && (
-              <motion.span
-                initial={{ opacity: 0, x: 8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 8 }}
-                transition={{ duration: 0.2 }}
-                className="bg-navy text-white text-xs font-heading font-bold px-2.5 py-1 rounded-full shadow-md whitespace-nowrap pointer-events-none"
-              >
-                Arattai Chat
-              </motion.span>
-            )}
-          </AnimatePresence>
-
           <button
             type="button"
-            data-ocid="arattai.open_modal_button"
+            data-ocid="arattai.chat.button"
             onClick={() => setArattaiOpen((prev) => !prev)}
-            aria-label={
-              arattaiOpen ? "Close Arattai chat" : "Open Arattai chat"
-            }
+            aria-label={arattaiOpen ? "Close chat" : "Open quick chat"}
             aria-expanded={arattaiOpen}
-            className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-navy ${
+            className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-navy border-2 border-gold ${
               arattaiOpen
                 ? "bg-navy-dark text-white scale-105"
                 : "bg-navy text-white hover:bg-navy-dark"
@@ -1528,7 +302,6 @@ function FloatingChatButtons() {
         </motion.div>
       </div>
 
-      {/* WhatsApp Button */}
       <motion.div
         initial={{ opacity: 0, scale: 0, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1539,18 +312,12 @@ function FloatingChatButtons() {
           stiffness: 260,
           damping: 20,
         }}
-        className="flex items-center gap-2"
       >
-        {/* Tooltip label */}
-        <span className="bg-[#25D366] text-white text-xs font-heading font-bold px-2.5 py-1 rounded-full shadow-md whitespace-nowrap pointer-events-none">
-          WhatsApp
-        </span>
-
         <a
           href="https://wa.me/919835410009"
           target="_blank"
           rel="noopener noreferrer"
-          data-ocid="whatsapp.button"
+          data-ocid="whatsapp.chat.button"
           aria-label="Chat with us on WhatsApp"
           className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#25D366]"
           style={{ backgroundColor: "#25D366" }}
@@ -1562,22 +329,1927 @@ function FloatingChatButtons() {
   );
 }
 
-/* ─── App Root ──────────────────────────────────────────────────── */
-export default function App() {
+/* ─────────────────────────────────────────────────────────────── */
+/*  NAVBAR                                                         */
+/* ─────────────────────────────────────────────────────────────── */
+
+function Navbar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
+  const aboutRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (aboutRef.current && !aboutRef.current.contains(e.target as Node)) {
+        setAboutOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handleHomeNavClick(hash: string) {
+    setMobileOpen(false);
+    setAboutOpen(false);
+    navigate({ to: "/" }).then(() => {
+      setTimeout(() => scrollToSection(hash), 80);
+    });
+  }
+
+  const NAV_LINKS = [
+    { label: "Services", hash: "services", ocid: "nav.services.link" },
+    { label: "Clients", hash: "clients", ocid: "nav.clients.link" },
+    { label: "Resources", hash: "resources", ocid: "nav.resources.link" },
+    { label: "Contact", hash: "contact", ocid: "nav.contact.link" },
+  ];
+
   return (
-    <>
-      <Toaster position="top-right" richColors />
-      <Navbar />
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-navy/98 backdrop-blur-md shadow-lg shadow-navy/20"
+          : "bg-navy/95 backdrop-blur-sm"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 lg:h-20">
+          {/* Logo */}
+          <Link
+            to="/"
+            className="flex items-center gap-3 focus:outline-none group"
+            aria-label="Shri Adya Logistics Home"
+          >
+            <img
+              src="/assets/uploads/Old-Logo-1-1.png"
+              alt="Shri Adya Logistics Logo"
+              className="h-10 lg:h-12 w-auto object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+            <div className="hidden sm:block">
+              <p className="font-display font-bold text-white text-sm lg:text-base leading-tight tracking-wide">
+                SHRI ADYA LOGISTICS
+              </p>
+              <p className="text-gold/80 text-xs leading-tight font-heading">
+                We are always there for you
+              </p>
+            </div>
+          </Link>
+
+          {/* Desktop Nav */}
+          <nav
+            className="hidden lg:flex items-center gap-7"
+            aria-label="Main navigation"
+          >
+            <button
+              type="button"
+              data-ocid="nav.home.link"
+              onClick={() => handleHomeNavClick("home")}
+              className="nav-link-desktop text-white/85 hover:text-gold font-heading font-semibold text-sm transition-colors duration-200"
+            >
+              Home
+            </button>
+
+            {/* About Dropdown */}
+            <div ref={aboutRef} className="relative">
+              <button
+                type="button"
+                data-ocid="nav.about.link"
+                onClick={() => setAboutOpen((v) => !v)}
+                className="nav-link-desktop text-white/85 hover:text-gold font-heading font-semibold text-sm flex items-center gap-1 transition-colors duration-200"
+                aria-expanded={aboutOpen}
+                aria-haspopup="true"
+              >
+                About
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-transform duration-200 ${aboutOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              <AnimatePresence>
+                {aboutOpen && (
+                  <motion.div
+                    data-ocid="nav.about.dropdown_menu"
+                    initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full left-0 mt-2 w-52 bg-navy-deeper border border-white/10 rounded-xl shadow-xl overflow-hidden z-50"
+                  >
+                    <Link
+                      to="/about"
+                      data-ocid="nav.about.corporate_profile.link"
+                      onClick={() => setAboutOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-heading font-semibold text-white/80 hover:text-gold hover:bg-white/5 transition-colors"
+                    >
+                      <Award className="w-4 h-4 text-gold/60" />
+                      Corporate Profile
+                    </Link>
+                    <Link
+                      to="/about"
+                      data-ocid="nav.about.our_history.link"
+                      onClick={() => setAboutOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-heading font-semibold text-white/80 hover:text-gold hover:bg-white/5 transition-colors"
+                    >
+                      <Star className="w-4 h-4 text-gold/60" />
+                      Our History
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {NAV_LINKS.map((item) => (
+              <button
+                type="button"
+                key={item.label}
+                data-ocid={item.ocid}
+                onClick={() => handleHomeNavClick(item.hash)}
+                className="nav-link-desktop text-white/85 hover:text-gold font-heading font-semibold text-sm transition-colors duration-200"
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            className="lg:hidden p-2 rounded-md text-white/80 hover:text-gold hover:bg-white/10 transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="lg:hidden border-t border-white/10 bg-navy-deeper shadow-xl overflow-hidden"
+          >
+            <nav className="px-4 py-4 flex flex-col gap-1">
+              <button
+                type="button"
+                data-ocid="nav.home.link"
+                onClick={() => {
+                  setMobileOpen(false);
+                  handleHomeNavClick("home");
+                }}
+                className="text-left py-3 px-4 rounded-md font-heading font-semibold text-sm text-white/80 hover:text-gold hover:bg-white/5 transition-colors"
+              >
+                Home
+              </button>
+
+              <div>
+                <button
+                  type="button"
+                  data-ocid="nav.about.link"
+                  onClick={() => setMobileAboutOpen((v) => !v)}
+                  className="w-full text-left py-3 px-4 rounded-md font-heading font-semibold text-sm text-white/80 hover:text-gold hover:bg-white/5 transition-colors flex items-center justify-between"
+                >
+                  About
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform duration-200 ${mobileAboutOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                <AnimatePresence>
+                  {mobileAboutOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="overflow-hidden pl-4"
+                    >
+                      <Link
+                        to="/about"
+                        data-ocid="nav.about.corporate_profile.link"
+                        onClick={() => {
+                          setMobileOpen(false);
+                          setMobileAboutOpen(false);
+                        }}
+                        className="flex items-center gap-2 py-2.5 px-4 rounded-md text-sm text-white/70 hover:text-gold hover:bg-white/5 transition-colors font-heading font-medium"
+                      >
+                        <Award className="w-3.5 h-3.5" />
+                        Corporate Profile
+                      </Link>
+                      <Link
+                        to="/about"
+                        data-ocid="nav.about.our_history.link"
+                        onClick={() => {
+                          setMobileOpen(false);
+                          setMobileAboutOpen(false);
+                        }}
+                        className="flex items-center gap-2 py-2.5 px-4 rounded-md text-sm text-white/70 hover:text-gold hover:bg-white/5 transition-colors font-heading font-medium"
+                      >
+                        <Star className="w-3.5 h-3.5" />
+                        Our History
+                      </Link>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {NAV_LINKS.map((item) => (
+                <button
+                  type="button"
+                  key={item.label}
+                  data-ocid={item.ocid}
+                  onClick={() => {
+                    setMobileOpen(false);
+                    handleHomeNavClick(item.hash);
+                  }}
+                  className="text-left py-3 px-4 rounded-md font-heading font-semibold text-sm text-white/80 hover:text-gold hover:bg-white/5 transition-colors"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  FOOTER                                                         */
+/* ─────────────────────────────────────────────────────────────── */
+
+function Footer() {
+  const year = new Date().getFullYear();
+
+  const QUICK_LINKS = [
+    { label: "Home", hash: "home" },
+    { label: "About Us", to: "/about" },
+    { label: "Services", hash: "services" },
+    { label: "Clients", hash: "clients" },
+    { label: "Resources", hash: "resources" },
+    { label: "Contact Us", hash: "contact" },
+  ];
+
+  const SOCIAL_LINKS = [
+    {
+      icon: Facebook,
+      label: "Facebook",
+      href: "https://fb.me/shriadyalogistics",
+    },
+    {
+      icon: Instagram,
+      label: "Instagram",
+      href: "https://instagram.com/shriadyalogistics9",
+    },
+    {
+      icon: Twitter,
+      label: "Twitter",
+      href: "https://twitter.com/shriadya",
+    },
+    {
+      icon: Youtube,
+      label: "YouTube",
+      href: "https://youtube.com/@shriadyalogistics",
+    },
+  ];
+
+  return (
+    <footer className="bg-navy-deeper text-white border-t border-white/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Brand */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-3 mb-5">
+              <img
+                src="/assets/uploads/Old-Logo-1-1.png"
+                alt="Shri Adya Logistics"
+                className="h-12 w-auto object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+              <div>
+                <p className="font-display font-bold text-white text-sm leading-tight">
+                  SHRI ADYA LOGISTICS
+                </p>
+                <p className="text-gold/60 text-xs">Enterprise · Est. 2014</p>
+              </div>
+            </div>
+            <p className="text-white/55 text-sm leading-relaxed max-w-sm mb-5">
+              A leading Explosive Transport and Blasting contract solution
+              company serving Jharkhand, Odisha and West Bengal. Trusted by CCL,
+              DVC and more.
+            </p>
+            <div className="flex gap-3">
+              {SOCIAL_LINKS.map((soc) => (
+                <a
+                  key={soc.label}
+                  href={soc.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={soc.label}
+                  className="w-9 h-9 rounded-full bg-white/8 text-white/50 flex items-center justify-center hover:bg-gold hover:text-navy transition-all duration-200"
+                >
+                  <soc.icon className="w-4 h-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h4 className="font-display font-bold text-gold text-sm uppercase tracking-widest mb-5">
+              Quick Links
+            </h4>
+            <ul className="space-y-2.5">
+              {QUICK_LINKS.map((link) => (
+                <li key={link.label}>
+                  {link.to ? (
+                    <Link
+                      to={link.to}
+                      className="text-white/55 hover:text-gold text-sm font-heading transition-colors duration-200 flex items-center gap-1.5 group"
+                    >
+                      <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection(link.hash!)}
+                      className="text-white/55 hover:text-gold text-sm font-heading transition-colors duration-200 flex items-center gap-1.5 group"
+                    >
+                      <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      {link.label}
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div>
+            <h4 className="font-display font-bold text-gold text-sm uppercase tracking-widest mb-5">
+              Contact Info
+            </h4>
+            <ul className="space-y-3 text-sm text-white/55">
+              <li className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-gold mt-0.5 flex-shrink-0" />
+                <span className="leading-relaxed">
+                  Bermo Magazine Loadhar, Bermo, Bokaro, Jharkhand 829127
+                </span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-gold flex-shrink-0" />
+                <a
+                  href="tel:+919835410009"
+                  className="hover:text-gold transition-colors"
+                >
+                  +91-9835410009
+                </a>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-gold flex-shrink-0" />
+                <a
+                  href="mailto:hello@shriadyalogistics.com"
+                  className="hover:text-gold transition-colors text-xs break-all"
+                >
+                  hello@shriadyalogistics.com
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-white/8 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/35">
+          <p>© {year} Shri Adya Logistics. All rights reserved.</p>
+          <p>
+            Built with ♥ using{" "}
+            <a
+              href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(typeof window !== "undefined" ? window.location.hostname : "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/50 hover:text-gold transition-colors underline underline-offset-2"
+            >
+              caffeine.ai
+            </a>
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  SHARED SECTION TITLE                                           */
+/* ─────────────────────────────────────────────────────────────── */
+
+function SectionTitle({
+  eyebrow,
+  title,
+  subtitle,
+  align = "center",
+}: {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  align?: "center" | "left";
+}) {
+  return (
+    <div
+      className={`mb-12 lg:mb-16 ${align === "center" ? "text-center" : ""}`}
+    >
+      {eyebrow && (
+        <p className="text-gold font-heading font-bold text-xs tracking-[0.2em] uppercase mb-3">
+          {eyebrow}
+        </p>
+      )}
+      <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
+        {title}
+      </h2>
+      {subtitle && (
+        <p
+          className={`mt-4 text-muted-foreground text-base max-w-2xl leading-relaxed ${align === "center" ? "mx-auto" : ""}`}
+        >
+          {subtitle}
+        </p>
+      )}
+      <div
+        className={`w-14 h-1 bg-gold rounded-full mt-5 ${align === "center" ? "mx-auto" : ""}`}
+      />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  HOME PAGE SECTIONS                                             */
+/* ─────────────────────────────────────────────────────────────── */
+
+/* Hero */
+function HeroSection() {
+  const navigate = useNavigate();
+
+  function goToContact() {
+    navigate({ to: "/" }).then(() => {
+      setTimeout(() => scrollToSection("contact"), 80);
+    });
+  }
+
+  function goToServices() {
+    navigate({ to: "/" }).then(() => {
+      setTimeout(() => scrollToSection("services"), 80);
+    });
+  }
+
+  return (
+    <section
+      id="home"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{
+        backgroundImage:
+          "url('/assets/generated/hero-mining-bg.dim_1920x1080.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center top",
+      }}
+    >
+      {/* Multi-layer overlay for depth */}
+      <div className="absolute inset-0 bg-gradient-to-br from-navy-deeper/95 via-navy/88 to-navy/70" />
+      <div className="absolute inset-0 bg-gradient-to-t from-navy-deeper/80 via-transparent to-transparent" />
+
+      {/* Decorative geometric accents */}
+      <div className="absolute top-24 right-8 lg:right-20 w-48 h-48 border border-gold/10 rounded-full opacity-40" />
+      <div className="absolute top-32 right-14 lg:right-28 w-28 h-28 border border-gold/15 rounded-full opacity-50" />
+      <div className="absolute bottom-20 left-8 w-32 h-32 border border-white/5 rounded-full" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 w-full">
+        <div className="max-w-3xl">
+          {/* Welcome label */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="inline-flex items-center gap-2.5 bg-gold/10 border border-gold/25 text-gold px-4 py-2 rounded-full text-xs font-heading font-bold tracking-[0.15em] uppercase mb-7 backdrop-blur-sm"
+          >
+            <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+            Welcome to
+          </motion.div>
+
+          {/* Main Heading */}
+          <motion.h1
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-[0.95] tracking-tight mb-5"
+          >
+            SHRI ADYA
+            <br />
+            <span className="text-gold">LOGISTICS</span>
+          </motion.h1>
+
+          {/* Tagline */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.35 }}
+            className="text-xl sm:text-2xl font-heading font-light text-white/80 italic mb-5 border-l-2 border-gold/50 pl-4"
+          >
+            "We are always there for you."
+          </motion.p>
+
+          {/* Description */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.45 }}
+            className="text-base sm:text-lg text-white/65 leading-relaxed mb-4 max-w-2xl"
+          >
+            We offer comprehensive mining solutions tailored to meet your
+            specific mining needs. Shri Adya Logistics is a leading player in
+            the mining sector in the mineral rich states of{" "}
+            <span className="text-white/85 font-medium">
+              Jharkhand, Odisha and West Bengal
+            </span>
+            .
+          </motion.p>
+
+          {/* Company register info */}
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.55 }}
+            className="text-xs text-white/45 font-heading mb-8 flex flex-wrap gap-x-4 gap-y-1"
+          >
+            <span>Registered Enterprise Firm</span>
+            <span className="text-gold/40">·</span>
+            <span>Proprietary: Anirudh Bose</span>
+            <span className="text-gold/40">·</span>
+            <span>Est. 26 July 2017</span>
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.65 }}
+            className="flex flex-col sm:flex-row gap-4"
+          >
+            <Button
+              data-ocid="hero.services.primary_button"
+              onClick={goToServices}
+              size="lg"
+              className="bg-gold hover:bg-gold/90 text-navy font-heading font-bold px-8 py-4 text-sm rounded-none tracking-[0.08em] uppercase transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-gold/20"
+            >
+              Our Services
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <Button
+              data-ocid="hero.contact.secondary_button"
+              variant="outline"
+              size="lg"
+              onClick={goToContact}
+              className="border-white/30 text-white hover:bg-white/10 hover:border-white/50 font-heading font-semibold px-8 py-4 text-sm rounded-none tracking-[0.08em] uppercase backdrop-blur-sm"
+            >
+              Contact Us
+            </Button>
+          </motion.div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1.2 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/30"
+        >
+          <span className="text-xs font-heading tracking-widest">SCROLL</span>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+            className="w-px h-8 bg-gradient-to-b from-white/30 to-transparent"
+          />
+        </motion.div>
+      </div>
+
+      {/* Bottom fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-background to-transparent" />
+    </section>
+  );
+}
+
+/* About Preview */
+function AboutPreviewSection() {
+  const { ref, visible } = useFadeInView();
+
+  return (
+    <section id="about" className="py-20 lg:py-28 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          ref={ref}
+          className={`grid lg:grid-cols-2 gap-14 lg:gap-20 items-center transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+        >
+          {/* Left: Text */}
+          <div>
+            <p className="text-gold font-heading font-bold text-xs tracking-[0.2em] uppercase mb-3">
+              Who We Are
+            </p>
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight mb-2">
+              About Shri Adya
+              <br />
+              <span className="text-gold">Logistics</span>
+            </h2>
+            <div className="w-14 h-1 bg-gold rounded-full mb-6" />
+
+            <p className="text-foreground/70 leading-relaxed mb-5 text-[15px]">
+              Shri Adya Logistics is a leading player in the mining sector in
+              the mineral rich states of Jharkhand, Odisha and West Bengal. The
+              company was established in the year 2017 by young entrepreneurs
+              with technical background.
+            </p>
+            <p className="text-foreground/70 leading-relaxed mb-7 text-[15px]">
+              The Company is registered under Enterprise firm under the name{" "}
+              <strong className="text-navy font-semibold">
+                'SHRI ADYA LOGISTICS'
+              </strong>
+              , Proprietary:{" "}
+              <strong className="text-navy font-semibold">Anirudh Bose</strong>,
+              Registered: 26 July 2017.
+            </p>
+
+            <Link to="/about">
+              <Button
+                data-ocid="about.learn_more.button"
+                className="bg-navy hover:bg-navy-dark text-white font-heading font-bold px-7 py-3 rounded-none tracking-[0.08em] uppercase text-sm transition-all duration-200 hover:scale-[1.02] group"
+              >
+                Learn More
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </div>
+
+          {/* Right: Highlight cards */}
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              {
+                icon: Zap,
+                value: "Est. 2017",
+                label: "Registered Enterprise",
+                bg: "bg-navy",
+              },
+              {
+                icon: MapPin,
+                value: "3 States",
+                label: "Jharkhand · Odisha · West Bengal",
+                bg: "bg-gold",
+              },
+              {
+                icon: Users,
+                value: "Expert Team",
+                label: "Technical Background",
+                bg: "bg-navy-dark",
+              },
+            ].map((item, i) => (
+              <motion.div
+                key={item.value}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+                className={`${item.bg} rounded-2xl p-5 text-center ${item.bg === "bg-gold" ? "text-navy" : "text-white"}`}
+              >
+                <item.icon
+                  className={`w-6 h-6 mx-auto mb-3 ${item.bg === "bg-gold" ? "text-navy" : "text-gold"}`}
+                />
+                <p
+                  className={`font-display font-bold text-lg leading-tight mb-1 ${item.bg === "bg-gold" ? "text-navy" : "text-white"}`}
+                >
+                  {item.value}
+                </p>
+                <p
+                  className={`text-xs font-heading leading-tight ${item.bg === "bg-gold" ? "text-navy/70" : "text-white/60"}`}
+                >
+                  {item.label}
+                </p>
+              </motion.div>
+            ))}
+
+            {/* Large stat below */}
+            <div className="col-span-3 bg-secondary/50 rounded-2xl p-5 border border-border flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gold/15 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-6 h-6 text-gold" />
+              </div>
+              <div>
+                <p className="font-display font-bold text-navy text-sm leading-tight">
+                  Safety First — Always
+                </p>
+                <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed">
+                  All drivers trained to comply with applicable government
+                  requirements for explosive transport.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Services Preview */
+function ServicesSection() {
+  return (
+    <section
+      id="services"
+      className="py-20 lg:py-28 bg-navy relative overflow-hidden"
+    >
+      {/* Background texture */}
+      <div className="absolute inset-0 opacity-5">
+        <div
+          className="absolute top-0 left-0 w-full h-full"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 lg:mb-16">
+          <p className="text-gold font-heading font-bold text-xs tracking-[0.2em] uppercase mb-3">
+            What We Do
+          </p>
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+            Our Services
+          </h2>
+          <p className="mt-4 text-white/55 text-base max-w-2xl mx-auto leading-relaxed">
+            "Service is what we sell. It is our quality of service that will set
+            us apart from our competition."
+          </p>
+          <div className="w-14 h-1 bg-gold rounded-full mx-auto mt-5" />
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-10">
+          {[
+            {
+              icon: Truck,
+              title: "Explosive Transportation",
+              badge: "Core Service",
+              desc: "SHRI ADYA LOGISTICS has a well designed and dedicated approved fleet of trucks ranging from 1 MT to 15 MT capacity for transporting all types of Explosives and Accessories to License locations.",
+              features: [
+                "All types of Explosives & Accessories",
+                "Transport to Licensed Locations",
+                "Government Overburden & Ore Transportation",
+                "Fleet: 1 MT – 15 MT capacity trucks",
+              ],
+            },
+            {
+              icon: Target,
+              title: "Logistics & Minerals",
+              badge: "Extended Service",
+              desc: "We transport Minerals from different loading points across India. Our logistic division abides by all imperative rules and regulations per fundamental mining guidelines.",
+              features: [
+                "Mineral Transport Nationwide",
+                "Tippers & Heavy Duty Trucks",
+                "Rack Loading & Shipment",
+                "Premium Iron Ore Supply",
+              ],
+            },
+          ].map((svc, i) => (
+            <motion.div
+              key={svc.title}
+              data-ocid={`services.item.${i + 1}`}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: i * 0.15 }}
+              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 lg:p-10 hover:bg-white/8 hover:border-gold/20 transition-all duration-300 group"
+            >
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-14 h-14 rounded-xl bg-gold/15 border border-gold/25 flex items-center justify-center group-hover:bg-gold/25 transition-colors">
+                  <svc.icon className="w-7 h-7 text-gold" />
+                </div>
+                <span className="text-xs font-heading font-bold tracking-widest uppercase text-gold/70 bg-gold/10 px-3 py-1 rounded-full">
+                  {svc.badge}
+                </span>
+              </div>
+              <h3 className="font-display text-2xl font-bold text-white mb-4">
+                {svc.title}
+              </h3>
+              <p className="text-white/65 leading-relaxed mb-6 text-sm">
+                {svc.desc}
+              </p>
+              <ul className="space-y-2.5">
+                {svc.features.map((f) => (
+                  <li
+                    key={f}
+                    className="flex items-center gap-2.5 text-sm text-white/60"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="text-center">
+          <button
+            type="button"
+            data-ocid="services.view_all.button"
+            onClick={() => scrollToSection("services")}
+            className="inline-flex items-center gap-2 text-gold font-heading font-bold text-sm tracking-wider uppercase border border-gold/30 hover:border-gold/60 hover:bg-gold/10 px-6 py-3 rounded-none transition-all duration-200"
+          >
+            View All Services
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Clients */
+function ClientsSection() {
+  return (
+    <section id="clients" className="py-20 lg:py-28 bg-secondary/40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionTitle
+          eyebrow="Who We Serve"
+          title="Our Trusted Clients"
+          subtitle="Trusted by leading public and private sector organizations across Eastern India."
+        />
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            {
+              name: "Central Coal Fields Limited",
+              abbr: "CCL",
+              desc: "A Miniratna Category-I Central Public Sector Enterprise and subsidiary of Coal India Limited.",
+              category: "Public Sector · Coal",
+            },
+            {
+              name: "Damodar Valley Corporation",
+              abbr: "DVC",
+              desc: "One of India's oldest multi-purpose river valley development projects, serving power and irrigation.",
+              category: "Public Sector · Power",
+            },
+            {
+              name: "BKB Transport Private Limited",
+              abbr: "BKB",
+              desc: "A leading private transport and logistics company in the Eastern India mining sector.",
+              category: "Private Sector · Transport",
+            },
+          ].map((client, i) => (
+            <motion.div
+              key={client.name}
+              data-ocid={`clients.item.${i + 1}`}
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.12 }}
+            >
+              <Card className="h-full border-border hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 group bg-card overflow-hidden">
+                <CardContent className="p-7 flex flex-col h-full">
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="w-16 h-16 rounded-xl bg-navy flex items-center justify-center text-white font-display font-black text-lg group-hover:bg-gold group-hover:text-navy transition-all duration-300">
+                      {client.abbr}
+                    </div>
+                    <div>
+                      <span className="text-xs font-heading font-bold text-gold bg-gold/8 px-2.5 py-1 rounded-full border border-gold/20">
+                        {client.category}
+                      </span>
+                    </div>
+                  </div>
+                  <h3 className="font-display font-bold text-navy text-lg mb-2 leading-snug">
+                    {client.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                    {client.desc}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Resources */
+function ResourcesSection() {
+  return (
+    <section id="resources" className="py-20 lg:py-28 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionTitle
+          eyebrow="Our Strength"
+          title="Resources"
+          subtitle="Our team of techno-managerial experts and skilled workforce is the backbone of our success."
+        />
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {[
+            {
+              icon: Users,
+              title: "Management Team",
+              desc: "The diversity of techno-managerial skills, coupled with the depth of specialist mining skills held by the executive team provides Shri Adya Logistics with a solid platform for achieving aggressive business performance and growth objectives set by the boards.",
+              stats: [
+                "Technical Expertise",
+                "Strategic Vision",
+                "10+ Years Experience",
+              ],
+            },
+            {
+              icon: Shield,
+              title: "Manpower",
+              desc: "We've earned our reputation as a respected employer by serving almost every Mining & Exploration customer representing through global portfolio of technology & operations. Shri Adya Logistics commits its people a secure future and knowledge base.",
+              stats: [
+                "Trained Drivers",
+                "Skilled Operators",
+                "Safety Compliant",
+              ],
+            },
+          ].map((res, i) => (
+            <motion.div
+              key={res.title}
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: i * 0.15 }}
+              className="bg-card border border-border rounded-2xl p-8 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 group"
+            >
+              <div className="w-14 h-14 rounded-xl bg-navy/8 border border-navy/15 flex items-center justify-center mb-6 group-hover:bg-gold/10 group-hover:border-gold/20 transition-all">
+                <res.icon className="w-7 h-7 text-navy group-hover:text-gold transition-colors" />
+              </div>
+              <h3 className="font-display text-xl font-bold text-navy mb-4">
+                {res.title}
+              </h3>
+              <p className="text-muted-foreground leading-relaxed text-sm mb-6">
+                {res.desc}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {res.stats.map((s) => (
+                  <span
+                    key={s}
+                    className="text-xs font-heading font-semibold text-navy bg-navy/6 border border-navy/12 px-3 py-1 rounded-full"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Contact */
+interface ContactFormData {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+}
+
+function ContactSection() {
+  const { actor } = useActor();
+  const [formData, setFormData] = useState<ContactFormData>({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  const contactMutation = useMutation({
+    mutationFn: async (data: ContactFormData) => {
+      if (!actor)
+        throw new Error("Service unavailable. Please try again later.");
+      await actor.submitContactForm(
+        data.name,
+        data.email,
+        `${data.message}${data.phone ? ` | Phone: ${data.phone}` : ""}`,
+      );
+    },
+    onSuccess: () => {
+      toast.success("Message sent! We'll get back to you soon.");
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to send. Please try again.");
+    },
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.message.trim()
+    ) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+    contactMutation.mutate(formData);
+  }
+
+  const CONTACT_INFO = [
+    {
+      icon: MapPin,
+      label: "Registered Office",
+      value:
+        "Bermo Magazine Loadhar Bera Basti, Bermo, Bokaro, Jharkhand 829127",
+    },
+    { icon: Phone, label: "Phone", value: "+91-9835410009" },
+    { icon: Mail, label: "Email", value: "hello@shriadyalogistics.com" },
+  ];
+
+  const SOCIAL_LINKS = [
+    {
+      icon: Facebook,
+      label: "Facebook",
+      href: "https://fb.me/shriadyalogistics",
+    },
+    {
+      icon: Instagram,
+      label: "Instagram",
+      href: "https://instagram.com/shriadyalogistics9",
+    },
+    {
+      icon: Twitter,
+      label: "Twitter",
+      href: "https://twitter.com/shriadya",
+    },
+    {
+      icon: Youtube,
+      label: "YouTube",
+      href: "https://youtube.com/@shriadyalogistics",
+    },
+  ];
+
+  return (
+    <section
+      id="contact"
+      className="py-20 lg:py-28 bg-navy-deeper relative overflow-hidden"
+    >
+      {/* Decorative */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gold/5 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/3 rounded-full translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 lg:mb-16">
+          <p className="text-gold font-heading font-bold text-xs tracking-[0.2em] uppercase mb-3">
+            Get In Touch
+          </p>
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+            Contact Us
+          </h2>
+          <p className="mt-4 text-white/50 text-base max-w-2xl mx-auto leading-relaxed">
+            Have a project in mind or need more information? We'd love to hear
+            from you.
+          </p>
+          <div className="w-14 h-1 bg-gold rounded-full mx-auto mt-5" />
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
+          {/* Contact Info */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            <h3 className="font-display text-2xl font-bold text-white mb-8">
+              Reach Out to Us
+            </h3>
+            <div className="space-y-5 mb-8">
+              {CONTACT_INFO.map((info) => (
+                <div key={info.label} className="flex items-start gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-gold/15 border border-gold/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <info.icon className="w-5 h-5 text-gold" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-heading font-bold text-gold uppercase tracking-widest mb-0.5">
+                      {info.label}
+                    </p>
+                    <p className="text-white/70 text-sm leading-relaxed">
+                      {info.value}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <p className="text-xs font-heading font-bold text-white/40 uppercase tracking-widest mb-4">
+                Follow Us
+              </p>
+              <div className="flex gap-3">
+                {SOCIAL_LINKS.map((soc) => (
+                  <a
+                    key={soc.label}
+                    href={soc.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={soc.label}
+                    className="w-10 h-10 rounded-xl bg-white/8 border border-white/10 text-white/50 flex items-center justify-center hover:bg-gold hover:text-navy hover:border-gold transition-all duration-200"
+                  >
+                    <soc.icon className="w-4 h-4" />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* WhatsApp CTA */}
+            <div className="mt-8 bg-white/5 border border-white/10 rounded-xl p-5">
+              <p className="text-white/70 text-sm font-heading font-semibold mb-2">
+                Prefer WhatsApp?
+              </p>
+              <a
+                href="https://wa.me/919835410009"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2.5 text-sm font-heading font-bold text-white bg-[#25D366] px-4 py-2.5 rounded-lg hover:bg-[#1da851] transition-colors"
+              >
+                <WhatsAppIcon className="w-4 h-4" />
+                Chat on WhatsApp
+              </a>
+            </div>
+          </motion.div>
+
+          {/* Form */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="bg-white rounded-2xl p-8 shadow-2xl"
+          >
+            <h3 className="font-display text-xl font-bold text-navy mb-6">
+              Send Us a Message
+            </h3>
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
+              <div>
+                <Label
+                  htmlFor="contact-name"
+                  className="font-heading font-semibold text-xs text-foreground/70 uppercase tracking-wider mb-1.5 block"
+                >
+                  Full Name <span className="text-gold">*</span>
+                </Label>
+                <Input
+                  id="contact-name"
+                  data-ocid="contact.form.input"
+                  type="text"
+                  placeholder="Your full name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, name: e.target.value }))
+                  }
+                  disabled={contactMutation.isPending}
+                  className="border-border focus-visible:ring-gold rounded-md"
+                  autoComplete="name"
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="contact-email"
+                  className="font-heading font-semibold text-xs text-foreground/70 uppercase tracking-wider mb-1.5 block"
+                >
+                  Email Address <span className="text-gold">*</span>
+                </Label>
+                <Input
+                  id="contact-email"
+                  data-ocid="contact.form.email.input"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, email: e.target.value }))
+                  }
+                  disabled={contactMutation.isPending}
+                  className="border-border focus-visible:ring-gold rounded-md"
+                  autoComplete="email"
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="contact-phone"
+                  className="font-heading font-semibold text-xs text-foreground/70 uppercase tracking-wider mb-1.5 block"
+                >
+                  Phone Number
+                </Label>
+                <Input
+                  id="contact-phone"
+                  data-ocid="contact.form.phone.input"
+                  type="tel"
+                  placeholder="+91 XXXXX XXXXX"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, phone: e.target.value }))
+                  }
+                  disabled={contactMutation.isPending}
+                  className="border-border focus-visible:ring-gold rounded-md"
+                  autoComplete="tel"
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="contact-message"
+                  className="font-heading font-semibold text-xs text-foreground/70 uppercase tracking-wider mb-1.5 block"
+                >
+                  Message <span className="text-gold">*</span>
+                </Label>
+                <Textarea
+                  id="contact-message"
+                  data-ocid="contact.form.textarea"
+                  placeholder="Tell us about your requirements..."
+                  value={formData.message}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, message: e.target.value }))
+                  }
+                  disabled={contactMutation.isPending}
+                  rows={4}
+                  className="border-border focus-visible:ring-gold rounded-md resize-none"
+                />
+              </div>
+
+              {contactMutation.isPending && (
+                <div
+                  data-ocid="contact.loading_state"
+                  className="flex items-center gap-2 text-sm text-navy/60 font-heading"
+                >
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Sending your message...</span>
+                </div>
+              )}
+              {contactMutation.isSuccess && (
+                <div
+                  data-ocid="contact.success_state"
+                  className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Message sent successfully!</span>
+                </div>
+              )}
+              {contactMutation.isError && (
+                <div
+                  data-ocid="contact.error_state"
+                  className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2"
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  <span>Failed to send. Please try again.</span>
+                </div>
+              )}
+
+              <Button
+                data-ocid="contact.form.submit_button"
+                type="submit"
+                disabled={contactMutation.isPending}
+                className="w-full bg-navy hover:bg-navy-dark text-white font-heading font-bold py-3 rounded-none tracking-[0.08em] uppercase text-sm transition-all duration-200"
+                size="lg"
+              >
+                {contactMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send Message
+                  </>
+                )}
+              </Button>
+            </form>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  HOME PAGE                                                      */
+/* ─────────────────────────────────────────────────────────────── */
+
+function HomePage() {
+  useEffect(() => {
+    document.title = "Shri Adya Logistics — We are always there for you";
+  }, []);
+
+  return (
+    <motion.div
+      key="home-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <main>
         <HeroSection />
-        <AboutSection />
+        <AboutPreviewSection />
         <ServicesSection />
         <ClientsSection />
         <ResourcesSection />
         <ContactSection />
       </main>
       <Footer />
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  ABOUT PAGE                                                     */
+/* ─────────────────────────────────────────────────────────────── */
+
+const CORE_VALUES = [
+  {
+    icon: Shield,
+    title: "Safety",
+    desc: "Safety is our first priority. We achieve this through training our drivers and employees to focus on driver compliance with all applicable government requirements.",
+  },
+  {
+    icon: Award,
+    title: "Integrity",
+    desc: "What we say, we do. We respect the rights of all people and value their diversity. We protect the culture and heritage of the environments and communities in which we operate.",
+  },
+  {
+    icon: Target,
+    title: "Excellence",
+    desc: "We strive for excellence in everything we do, taking pride in our people, plant and process. We exceed customer expectations through innovation and continuous improvement.",
+  },
+  {
+    icon: Leaf,
+    title: "Environment",
+    desc: "We are committed to a sustainable future. Effective environmental control is integral to our operations, with comprehensive management plans for each operation.",
+  },
+];
+
+function AboutPage() {
+  useEffect(() => {
+    document.title = "About Us — Shri Adya Logistics";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  return (
+    <motion.div
+      key="about-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Page Banner */}
+      <section className="relative bg-navy-deeper pt-28 pb-16 lg:pt-32 lg:pb-20 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gold/5 rounded-full -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/3 rounded-full translate-y-1/2 -translate-x-1/4" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex items-center gap-1.5 text-white/40 text-sm font-heading mb-6"
+          >
+            <Link to="/" className="hover:text-gold transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <span className="text-gold font-semibold">About Us</span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4"
+          >
+            About Us
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-white/60 text-lg max-w-2xl leading-relaxed"
+          >
+            A trusted name in Explosive Transport and Blasting Contract
+            solutions across Jharkhand, Odisha and West Bengal.
+          </motion.p>
+        </div>
+      </section>
+
+      <main className="bg-background">
+        {/* Corporate Profile */}
+        <section id="corporate-profile" className="py-20 lg:py-28">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionTitle
+              eyebrow="Who We Are"
+              title="Corporate Profile"
+              align="left"
+            />
+
+            <div className="grid lg:grid-cols-2 gap-12 items-start">
+              <div>
+                <p className="text-foreground/70 leading-relaxed mb-5">
+                  Welcome to Shri Adya Logistics, a reputed Explosive Transport
+                  and blasting contract solution-based company in Jharkhand,
+                  Odisha and West Bengal. In 29-September-2014, we had
+                  established a proprietary unit Mr. Anirudh Bose. Fast forward
+                  to 2026 and today we are a highly renowned Explosive Transport
+                  and Blasting contract solution company in the Jharkhand,
+                  Odisha and West Bengal.
+                </p>
+                <p className="text-foreground/70 leading-relaxed mb-5">
+                  Backed by a vast experience in raising, crushing, excavation,
+                  transportation and sales, we have successfully generated a
+                  loyal chain of followers today. Our company has deployed
+                  excavators, crushing plant, dozers, hyva, tippers, etc. in
+                  various projects. These apart, we have also rented and leased
+                  out different kinds of mining and crushing equipment.
+                </p>
+                <p className="text-foreground/70 leading-relaxed">
+                  Through responsible Explosive Transport and blasting contract
+                  solution services, we believe we can create a stronger
+                  business and value for all our customers.
+                </p>
+              </div>
+
+              <div className="space-y-5">
+                <div className="bg-navy rounded-2xl p-8 text-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gold/10 rounded-full -translate-y-16 translate-x-16" />
+                  <div className="relative z-10">
+                    <p className="text-xs font-heading font-bold text-gold uppercase tracking-widest mb-3">
+                      Founder's Quote
+                    </p>
+                    <blockquote className="text-base font-display font-medium italic leading-relaxed text-white/85 mb-5">
+                      "As long as you are the last man standing and are adding
+                      value, you would continue to grow. The last man standing
+                      has the best chance at being the first man forward."
+                    </blockquote>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center font-display font-bold text-navy text-sm">
+                        AB
+                      </div>
+                      <div>
+                        <p className="font-heading font-bold text-white text-sm">
+                          Anirudh Bose
+                        </p>
+                        <p className="text-white/55 text-xs">
+                          Proprietor, Shri Adya Logistics
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: "Founded", value: "2014" },
+                    { label: "Registered", value: "2017" },
+                    { label: "States", value: "3" },
+                    { label: "Equipment Types", value: "6+" },
+                  ].map((stat) => (
+                    <div
+                      key={stat.label}
+                      className="bg-secondary/50 border border-border rounded-xl p-4 text-center"
+                    >
+                      <p className="font-display text-2xl font-bold text-gold">
+                        {stat.value}
+                      </p>
+                      <p className="text-xs text-muted-foreground font-heading font-semibold mt-1">
+                        {stat.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Our History */}
+        <section id="our-history" className="py-20 lg:py-28 bg-secondary/40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionTitle
+              eyebrow="Our Journey"
+              title="Our History"
+              align="left"
+            />
+
+            <div className="max-w-3xl">
+              <div className="bg-gold/8 border-l-4 border-gold rounded-r-xl px-6 py-4 mb-8">
+                <p className="text-navy font-display font-semibold text-lg leading-snug">
+                  From a humble beginning in 2014 to a registered enterprise —
+                  the inspiring story of Shri Adya Logistics.
+                </p>
+              </div>
+
+              <div className="space-y-5 text-foreground/75 leading-relaxed">
+                <p>
+                  The Company was started on{" "}
+                  <span className="inline-flex items-center bg-navy text-white font-heading font-bold text-xs px-2.5 py-0.5 rounded-full mx-0.5 align-middle">
+                    29 Sep 2014
+                  </span>{" "}
+                  by{" "}
+                  <strong className="text-navy font-semibold">
+                    Anirudh Bose
+                  </strong>
+                  , but the company didn't have any work at the time. After a
+                  few months, Anirudh decided he should work with his cousin
+                  brother{" "}
+                  <strong className="text-navy font-semibold">
+                    Sabyasachi Bose
+                  </strong>{" "}
+                  as partners — together they decided to create an Explosive
+                  Transportation Company.
+                </p>
+
+                <p>
+                  After a few months, they got their first Work Order on{" "}
+                  <span className="inline-flex items-center bg-navy text-white font-heading font-bold text-xs px-2.5 py-0.5 rounded-full mx-0.5 align-middle">
+                    17 Nov 2014
+                  </span>{" "}
+                  for transporting explosives. However, at that time they did
+                  not have a truck nor a registered company, so they offered the
+                  work to another company and started work as a{" "}
+                  <em className="text-foreground/60">Sub-contractor</em> on
+                  behalf of that company.
+                </p>
+
+                <p>
+                  Later on, after approximately one year, Sabyasachi Bose was
+                  discontinued from the partnership. From there, Anirudh Bose
+                  took over all the charges of the company and completed the
+                  order successfully.
+                </p>
+
+                <p>
+                  After completing three successful years, Anirudh decided to
+                  register his own company. He registered the company on{" "}
+                  <span className="inline-flex items-center bg-gold text-navy font-heading font-bold text-xs px-2.5 py-0.5 rounded-full mx-0.5 align-middle">
+                    26 Jul 2017
+                  </span>{" "}
+                  under the name{" "}
+                  <strong className="text-navy font-semibold">
+                    "SHRI ADYA LOGISTICS"
+                  </strong>{" "}
+                  under Enterprise firm — a milestone that marked the formal
+                  beginning of a thriving logistics business.
+                </p>
+              </div>
+
+              <div className="mt-10 grid grid-cols-3 gap-4">
+                {[
+                  { date: "29 Sep 2014", label: "Company Founded" },
+                  { date: "17 Nov 2014", label: "First Work Order" },
+                  { date: "26 Jul 2017", label: "Official Registration" },
+                ].map((m) => (
+                  <div
+                    key={m.date}
+                    className="bg-navy text-white rounded-xl p-4 text-center"
+                  >
+                    <p className="font-display font-bold text-gold text-sm leading-tight mb-1">
+                      {m.date}
+                    </p>
+                    <p className="text-white/70 text-xs font-heading font-semibold leading-snug">
+                      {m.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Vision & Mission */}
+        <section className="py-16 lg:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionTitle
+              eyebrow="Our Direction"
+              title="Vision &amp; Mission"
+            />
+            <div className="grid md:grid-cols-2 gap-6">
+              {[
+                {
+                  icon: "👁️",
+                  label: "Our Vision",
+                  text: "We will provide the best transport system which is safe, reliable, efficient, environmentally friendly and satisfying to both users and operators.",
+                  bg: "bg-navy",
+                },
+                {
+                  icon: "🎯",
+                  label: "Our Mission",
+                  text: "To constantly seek high levels of productivity and technical efficiency; to maintain technological superiority over competitors. Customer satisfaction has always topped our priority list.",
+                  bg: "bg-gold",
+                },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.15 }}
+                  className={`${item.bg} rounded-2xl p-8 ${item.bg === "bg-gold" ? "text-navy" : "text-white"}`}
+                >
+                  <span className="text-3xl mb-4 block">{item.icon}</span>
+                  <h3 className="font-display text-xl font-bold mb-3">
+                    {item.label}
+                  </h3>
+                  <p
+                    className={`leading-relaxed ${item.bg === "bg-gold" ? "text-navy/75" : "text-white/80"}`}
+                  >
+                    {item.text}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Core Values */}
+        <section className="py-16 lg:py-24 bg-secondary/40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionTitle
+              eyebrow="What Drives Us"
+              title="Core Values"
+              subtitle="Shri Adya Logistics values are fundamental to the overall success of our business and the foundation upon which we operate every day."
+            />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {CORE_VALUES.map((val, i) => (
+                <motion.div
+                  key={val.title}
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="group bg-card border border-border rounded-xl p-6 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-navy/6 flex items-center justify-center mb-4 group-hover:bg-gold/10 transition-colors">
+                    <val.icon className="w-6 h-6 text-navy group-hover:text-gold transition-colors" />
+                  </div>
+                  <h4 className="font-display font-bold text-navy mb-2">
+                    {val.title}
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {val.desc}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Our Values Extended */}
+        <section className="py-16 bg-navy-deeper">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+            >
+              <p className="text-white/60 font-heading text-base max-w-2xl mx-auto leading-relaxed mb-8">
+                Shri Adya Logistics strongly believes in giving back to the
+                society and its Corporate Social Responsibility. It facilitates
+                periphery development across verticals including medical
+                welfare, afforestation, education, infrastructure development
+                and cultural activities.
+              </p>
+              <Link to="/">
+                <Button
+                  onClick={() =>
+                    setTimeout(() => scrollToSection("contact"), 80)
+                  }
+                  className="bg-gold hover:bg-gold/90 text-navy font-heading font-bold px-8 py-3 rounded-none tracking-[0.08em] uppercase text-sm"
+                >
+                  Work With Us
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  COMING SOON PAGE TEMPLATE                                      */
+/* ─────────────────────────────────────────────────────────────── */
+
+function ComingSoonPage({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  useEffect(() => {
+    document.title = `${title} — Shri Adya Logistics`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [title]);
+
+  return (
+    <motion.div
+      key={`page-${title}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Banner */}
+      <section className="relative bg-navy-deeper pt-28 pb-16 lg:pt-32 lg:pb-20 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gold/5 rounded-full -translate-y-1/2 translate-x-1/4" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-1.5 text-white/40 text-sm font-heading mb-6">
+            <Link to="/" className="hover:text-gold transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <span className="text-gold font-semibold">{title}</span>
+          </div>
+          <h1 className="font-display text-4xl sm:text-5xl font-bold text-white leading-tight mb-4">
+            {title}
+          </h1>
+          <p className="text-white/55 text-lg max-w-xl leading-relaxed">
+            {description}
+          </p>
+        </div>
+      </section>
+
+      <main className="bg-background min-h-[50vh] flex items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full text-center">
+          <div className="max-w-md mx-auto">
+            <div className="w-20 h-20 rounded-2xl bg-navy/8 border border-navy/12 flex items-center justify-center mx-auto mb-6">
+              <Truck className="w-10 h-10 text-gold" />
+            </div>
+            <h2 className="font-display text-2xl font-bold text-navy mb-3">
+              Page Coming Soon
+            </h2>
+            <p className="text-muted-foreground text-base leading-relaxed mb-8">
+              This page is under construction. We're working hard to bring you
+              all the details. In the meantime, contact us directly.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link to="/">
+                <Button className="bg-navy hover:bg-navy-dark text-white font-heading font-bold px-6 py-3 rounded-none uppercase tracking-wider text-sm">
+                  Back to Home
+                </Button>
+              </Link>
+              <Link to="/">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setTimeout(() => scrollToSection("contact"), 80)
+                  }
+                  className="border-navy/30 text-navy hover:bg-navy/5 font-heading font-semibold px-6 py-3 rounded-none uppercase tracking-wider text-sm"
+                >
+                  Contact Us
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  ROOT LAYOUT                                                    */
+/* ─────────────────────────────────────────────────────────────── */
+
+function RootLayout() {
+  return (
+    <>
+      <Toaster position="top-right" richColors />
+      <Navbar />
+      <AnimatePresence mode="wait">
+        <Outlet />
+      </AnimatePresence>
       <FloatingChatButtons />
     </>
   );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  ROUTER SETUP                                                   */
+/* ─────────────────────────────────────────────────────────────── */
+
+const rootRoute = createRootRoute({
+  component: RootLayout,
+});
+
+const homeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/",
+  component: HomePage,
+});
+
+const aboutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/about",
+  component: AboutPage,
+});
+
+const servicesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/services",
+  component: () => (
+    <ComingSoonPage
+      title="Services"
+      description="Detailed information about our Explosive Transportation and Logistics services."
+    />
+  ),
+});
+
+const clientsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/clients",
+  component: () => (
+    <ComingSoonPage
+      title="Our Clients"
+      description="Learn about the trusted organizations we serve across Eastern India."
+    />
+  ),
+});
+
+const resourcesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/resources",
+  component: () => (
+    <ComingSoonPage
+      title="Resources"
+      description="Learn about our management team, manpower, and operational capabilities."
+    />
+  ),
+});
+
+const contactRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/contact",
+  component: () => (
+    <ComingSoonPage
+      title="Contact Us"
+      description="Get in touch with our team for inquiries, partnerships, or more information."
+    />
+  ),
+});
+
+const routeTree = rootRoute.addChildren([
+  homeRoute,
+  aboutRoute,
+  servicesRoute,
+  clientsRoute,
+  resourcesRoute,
+  contactRoute,
+]);
+
+const router = createRouter({
+  routeTree,
+  defaultPreload: "intent",
+});
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  APP ROOT                                                       */
+/* ─────────────────────────────────────────────────────────────── */
+
+export default function App() {
+  return <RouterProvider router={router} />;
 }

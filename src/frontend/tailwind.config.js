@@ -59,11 +59,10 @@ export default {
           dark: "oklch(var(--navy-dark))",
           deeper: "oklch(var(--navy-deeper))",
         },
-        crimson: {
-          DEFAULT: "oklch(var(--crimson))",
-          dark: "oklch(var(--crimson-dark))",
+        gold: {
+          DEFAULT: "oklch(var(--gold))",
+          dark: "oklch(var(--gold-dark))",
         },
-        gold: "oklch(var(--gold))",
         chart: {
           1: "oklch(var(--chart-1))",
           2: "oklch(var(--chart-2))",
