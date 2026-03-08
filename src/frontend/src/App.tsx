@@ -366,7 +366,6 @@ function Navbar() {
   }
 
   const NAV_LINKS = [
-    { label: "Clients", hash: "clients", ocid: "nav.clients.link" },
     { label: "Resources", hash: "resources", ocid: "nav.resources.link" },
   ];
 
@@ -398,7 +397,7 @@ function Navbar() {
               <p className="font-display font-bold text-white text-sm lg:text-base leading-tight tracking-wide">
                 SHRI ADYA LOGISTICS
               </p>
-              <p className="text-gold/80 text-xs leading-tight font-heading">
+              <p className="text-white text-xs leading-tight font-heading">
                 We are always there for you
               </p>
             </div>
@@ -492,6 +491,13 @@ function Navbar() {
               className="nav-link-desktop text-white/85 hover:text-gold font-heading font-semibold text-sm transition-colors duration-200"
             >
               Contact
+            </Link>
+            <Link
+              to="/erp"
+              data-ocid="nav.erp.link"
+              className="nav-link-desktop text-white/85 hover:text-gold font-heading font-semibold text-sm transition-colors duration-200"
+            >
+              ERP
             </Link>
           </nav>
 
@@ -615,6 +621,14 @@ function Navbar() {
                 className="block text-left py-3 px-4 rounded-md font-heading font-semibold text-sm text-white/80 hover:text-gold hover:bg-white/5 transition-colors"
               >
                 Contact
+              </Link>
+              <Link
+                to="/erp"
+                data-ocid="nav.erp.link"
+                onClick={() => setMobileOpen(false)}
+                className="block text-left py-3 px-4 rounded-md font-heading font-semibold text-sm text-white/80 hover:text-gold hover:bg-white/5 transition-colors"
+              >
+                ERP
               </Link>
             </nav>
           </motion.div>
@@ -2706,6 +2720,226 @@ function ServicesPage() {
 }
 
 /* ─────────────────────────────────────────────────────────────── */
+/*  ERP PAGE                                                       */
+/* ─────────────────────────────────────────────────────────────── */
+
+function ErpPage() {
+  useEffect(() => {
+    document.title = "ERP — Shri Adya Logistics";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const ERP_MODULES = [
+    {
+      icon: Truck,
+      title: "Fleet Management",
+      desc: "Track and manage your entire fleet of explosive transport trucks, assign routes, and monitor vehicle compliance in real time.",
+      status: "Coming Soon",
+    },
+    {
+      icon: Shield,
+      title: "Compliance Portal",
+      desc: "Centralise all government compliance documents, licenses, and regulatory approvals for explosive transportation in one place.",
+      status: "Coming Soon",
+    },
+    {
+      icon: Users,
+      title: "Team Dashboard",
+      desc: "Manage drivers, operators, and staff profiles, track certifications, assign jobs, and monitor workforce performance.",
+      status: "Coming Soon",
+    },
+    {
+      icon: Target,
+      title: "Order & Job Tracking",
+      desc: "End-to-end visibility of work orders — from first assignment to final delivery — across all active mining sites.",
+      status: "Coming Soon",
+    },
+    {
+      icon: MapPin,
+      title: "Route & Site Planning",
+      desc: "Plan and optimise transport routes for explosive deliveries across Jharkhand, Odisha and West Bengal mining sites.",
+      status: "Coming Soon",
+    },
+    {
+      icon: Award,
+      title: "Reports & Analytics",
+      desc: "Generate operational reports, track KPIs, and gain business insights to drive better decisions and growth.",
+      status: "Coming Soon",
+    },
+  ];
+
+  return (
+    <motion.div
+      key="erp-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Hero Banner */}
+      <section className="relative bg-navy-deeper pt-28 pb-16 lg:pt-32 lg:pb-20 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gold/5 rounded-full -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/3 rounded-full translate-y-1/2 -translate-x-1/4" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 30% 60%, white 1px, transparent 1px), radial-gradient(circle at 70% 30%, white 1px, transparent 1px)",
+              backgroundSize: "50px 50px",
+            }}
+          />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex items-center gap-1.5 text-white/40 text-sm font-heading mb-6"
+          >
+            <Link to="/" className="hover:text-gold transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <span className="text-gold font-semibold">ERP</span>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/25 text-gold px-4 py-1.5 rounded-full text-xs font-heading font-bold tracking-widest uppercase mb-5">
+              <Zap className="w-3.5 h-3.5" />
+              Enterprise Resource Planning
+            </div>
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4">
+              ERP System
+            </h1>
+            <p className="text-white/60 text-lg max-w-2xl leading-relaxed">
+              A dedicated enterprise platform for Shri Adya Logistics — managing
+              fleet, compliance, workforce, and operations all in one place.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      <main className="bg-background">
+        {/* Coming Soon Banner */}
+        <section className="py-12 bg-gold/8 border-y border-gold/15">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gold/15 border border-gold/25 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-6 h-6 text-gold" />
+                </div>
+                <div>
+                  <p className="font-display font-bold text-navy text-base">
+                    ERP Module Under Development
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    We are actively building these tools. Stay tuned for launch
+                    updates.
+                  </p>
+                </div>
+              </div>
+              <Link to="/contact">
+                <Button
+                  data-ocid="erp.notify.primary_button"
+                  className="bg-navy hover:bg-navy-dark text-white font-heading font-bold px-6 py-2.5 rounded-none tracking-[0.08em] uppercase text-xs whitespace-nowrap"
+                >
+                  Get Notified
+                  <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ERP Module Cards */}
+        <section className="py-20 lg:py-28">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionTitle
+              eyebrow="Platform Overview"
+              title="ERP Modules"
+              subtitle="Powerful tools designed specifically for the explosive transport and logistics industry — built to streamline every aspect of operations."
+            />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {ERP_MODULES.map((mod, i) => (
+                <motion.div
+                  key={mod.title}
+                  data-ocid={`erp.module.item.${i + 1}`}
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.08 }}
+                  className="group bg-card border border-border rounded-2xl p-7 hover:shadow-lg hover:-translate-y-1 hover:border-gold/25 transition-all duration-300 relative overflow-hidden"
+                >
+                  <div className="absolute top-4 right-4">
+                    <span className="text-xs font-heading font-bold tracking-widest uppercase text-gold/70 bg-gold/8 border border-gold/15 px-2.5 py-1 rounded-full">
+                      {mod.status}
+                    </span>
+                  </div>
+                  <div className="w-13 h-13 w-12 h-12 rounded-xl bg-navy/6 border border-navy/12 flex items-center justify-center mb-5 group-hover:bg-gold/10 group-hover:border-gold/20 transition-all">
+                    <mod.icon className="w-6 h-6 text-navy group-hover:text-gold transition-colors" />
+                  </div>
+                  <h3 className="font-display font-bold text-navy text-lg mb-3 pr-16">
+                    {mod.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {mod.desc}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="py-16 lg:py-20 bg-navy-deeper">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+            >
+              <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mb-4">
+                Interested in Early Access?
+              </h2>
+              <p className="text-white/55 text-base leading-relaxed max-w-xl mx-auto mb-8">
+                Contact us to learn more about our upcoming ERP platform and how
+                it can help streamline your mining logistics operations.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/contact">
+                  <Button
+                    data-ocid="erp.contact.primary_button"
+                    className="bg-gold hover:bg-gold/90 text-navy font-heading font-bold px-8 py-3 rounded-none tracking-[0.08em] uppercase text-sm"
+                  >
+                    Contact Us
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link to="/">
+                  <Button
+                    data-ocid="erp.home.secondary_button"
+                    variant="outline"
+                    className="border-white/30 text-white hover:bg-white/10 hover:border-white/50 font-heading font-semibold px-8 py-3 rounded-none tracking-[0.08em] uppercase text-sm backdrop-blur-sm"
+                  >
+                    Back to Home
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
 /*  ROOT LAYOUT                                                    */
 /* ─────────────────────────────────────────────────────────────── */
 
@@ -2759,21 +2993,361 @@ const clientsRoute = createRoute({
   ),
 });
 
+function ResourcesPage() {
+  useEffect(() => {
+    document.title = "Resources — Shri Adya Logistics";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  return (
+    <motion.div
+      key="resources-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Hero Banner */}
+      <section className="relative bg-navy-deeper pt-28 pb-16 lg:pt-32 lg:pb-20 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gold/5 rounded-full -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/3 rounded-full translate-y-1/2 -translate-x-1/4" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex items-center gap-1.5 text-white/40 text-sm font-heading mb-6"
+          >
+            <Link to="/" className="hover:text-gold transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <span className="text-gold font-semibold">Resources</span>
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4"
+          >
+            Resources
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-white/60 text-lg max-w-2xl leading-relaxed"
+          >
+            Our people are our greatest asset — a skilled management team and a
+            committed workforce driving excellence every day.
+          </motion.p>
+        </div>
+      </section>
+
+      <main className="bg-background">
+        {/* Management Team Section */}
+        <section id="management-team" className="py-20 lg:py-28">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionTitle
+              eyebrow="Leadership"
+              title="Management Team"
+              align="left"
+            />
+            <div className="grid lg:grid-cols-2 gap-12 items-start">
+              <div>
+                <p className="text-foreground/70 leading-relaxed mb-6 text-[15px]">
+                  The diversity of techno-managerial skills, coupled with the
+                  depth of specialist mining skills held by the executive team
+                  provides Shri Adya Logistics with a solid platform for
+                  achieving the aggressive business performance and growth
+                  objectives set by the boards.
+                </p>
+                <p className="text-foreground/70 leading-relaxed text-[15px]">
+                  Our management team brings together deep domain expertise in
+                  explosive transportation, logistics, and mining operations —
+                  ensuring every project is executed with precision, safety, and
+                  operational excellence.
+                </p>
+              </div>
+              <div className="space-y-4">
+                {[
+                  {
+                    icon: Target,
+                    title: "Techno-Managerial Expertise",
+                    desc: "A rare blend of technical know-how and strategic management capability that drives business performance.",
+                  },
+                  {
+                    icon: Award,
+                    title: "Specialist Mining Skills",
+                    desc: "Deep specialist knowledge of mining operations, explosive handling, and compliance requirements.",
+                  },
+                  {
+                    icon: Zap,
+                    title: "Growth-Oriented Vision",
+                    desc: "Ambitious, board-approved objectives with clear pathways to sustained business growth across regions.",
+                  },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.title}
+                    data-ocid={`resources.management.item.${i + 1}`}
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: i * 0.12 }}
+                    className="flex items-start gap-4 bg-secondary/50 border border-border rounded-xl p-5 hover:border-gold/30 hover:shadow-sm transition-all duration-300"
+                  >
+                    <div className="w-11 h-11 rounded-lg bg-navy/8 border border-navy/15 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-gold" />
+                    </div>
+                    <div>
+                      <h4 className="font-display font-bold text-navy text-sm mb-1">
+                        {item.title}
+                      </h4>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {item.desc}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Leadership highlight card */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mt-12 bg-navy rounded-2xl p-8 lg:p-10 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gold/8 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/3 rounded-full translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+              <div className="relative z-10 grid sm:grid-cols-3 gap-8 items-center">
+                <div className="sm:col-span-2">
+                  <p className="text-xs font-heading font-bold text-gold uppercase tracking-widest mb-3">
+                    Proprietary & Founder
+                  </p>
+                  <h3 className="font-display text-2xl font-bold text-white mb-3">
+                    Anirudh Bose
+                  </h3>
+                  <p className="text-white/65 text-sm leading-relaxed mb-4">
+                    Founder and Proprietor of Shri Adya Logistics, Anirudh Bose
+                    established the company from the ground up — beginning as a
+                    sub-contractor in 2014 and building it into a fully
+                    registered, respected enterprise by 2017.
+                  </p>
+                  <blockquote className="border-l-2 border-gold pl-4 text-white/75 italic text-sm leading-relaxed">
+                    "As long as you are the last man standing and are adding
+                    value, you would continue to grow."
+                  </blockquote>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: "2014", label: "Founded" },
+                    { value: "2017", label: "Registered" },
+                    { value: "3", label: "States" },
+                    { value: "10+", label: "Years Active" },
+                  ].map((stat) => (
+                    <div
+                      key={stat.label}
+                      className="bg-white/8 rounded-xl p-4 text-center"
+                    >
+                      <p className="font-display font-bold text-gold text-xl">
+                        {stat.value}
+                      </p>
+                      <p className="text-white/55 text-xs font-heading mt-0.5">
+                        {stat.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Manpower Section */}
+        <section id="manpower" className="py-20 lg:py-28 bg-secondary/40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionTitle
+              eyebrow="Our Workforce"
+              title="Manpower"
+              align="left"
+            />
+            <div className="grid lg:grid-cols-2 gap-12 items-start">
+              <div className="space-y-5">
+                <div className="bg-gold/8 border-l-4 border-gold rounded-r-xl px-6 py-4">
+                  <p className="text-navy font-display font-semibold text-base leading-snug">
+                    A respected employer serving Mining & Exploration customers
+                    through a global portfolio of technology and operations.
+                  </p>
+                </div>
+                <p className="text-foreground/70 leading-relaxed text-[15px]">
+                  We've earned our reputation as a respected employer by serving
+                  almost every Mining & Exploration customer representing
+                  through global portfolio of technology & operations.
+                </p>
+                <p className="text-foreground/70 leading-relaxed text-[15px]">
+                  As the Company's steadfast and unwavering commitment to the
+                  Mining sector, Shri Adya Logistics commits its people a secure
+                  future and knowledge base — investing in their growth, safety
+                  training, and long-term career development.
+                </p>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-5">
+                {[
+                  {
+                    icon: Shield,
+                    title: "Safety Trained Drivers",
+                    desc: "All drivers trained to comply with government requirements for explosive transportation.",
+                    color: "text-navy",
+                  },
+                  {
+                    icon: Users,
+                    title: "Skilled Operators",
+                    desc: "Experienced operators handling excavators, crushers, dozers, hyva, and tippers.",
+                    color: "text-navy",
+                  },
+                  {
+                    icon: Award,
+                    title: "Secure Future",
+                    desc: "The company commits to giving its workforce a stable career and knowledge growth path.",
+                    color: "text-navy",
+                  },
+                  {
+                    icon: Star,
+                    title: "Knowledge Base",
+                    desc: "Continuous training and development ensuring our team stays ahead in the industry.",
+                    color: "text-navy",
+                  },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.title}
+                    data-ocid={`resources.manpower.item.${i + 1}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                    className="bg-card border border-border rounded-xl p-5 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-navy/6 flex items-center justify-center mb-3">
+                      <item.icon className="w-5 h-5 text-gold" />
+                    </div>
+                    <h4 className="font-display font-bold text-navy text-sm mb-1.5">
+                      {item.title}
+                    </h4>
+                    <p className="text-muted-foreground text-xs leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Equipment & Fleet */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mt-12 bg-card border border-border rounded-2xl p-8"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
+                  <Truck className="w-6 h-6 text-gold" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-navy text-lg">
+                    Fleet & Equipment
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Operated and managed by our skilled workforce
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                {[
+                  "Excavators",
+                  "Crushing Plant",
+                  "Dozers",
+                  "Hyva Trucks",
+                  "Tippers",
+                  "Heavy Duty Trucks",
+                  "Rack Loading Equipment",
+                  "1 MT – 15 MT Explosive Transport Trucks",
+                ].map((item) => (
+                  <span
+                    key={item}
+                    className="text-sm font-heading font-semibold text-navy bg-navy/6 border border-navy/12 px-3.5 py-1.5 rounded-full"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 bg-navy-deeper">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+            >
+              <p className="text-white/60 font-heading text-base max-w-2xl mx-auto leading-relaxed mb-8">
+                Interested in partnering with us or learning more about our
+                capabilities? Our team is ready to discuss your mining and
+                logistics requirements.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/contact">
+                  <Button
+                    data-ocid="resources.contact.primary_button"
+                    className="bg-gold hover:bg-gold/90 text-navy font-heading font-bold px-8 py-3 rounded-none tracking-[0.08em] uppercase text-sm"
+                  >
+                    Contact Us <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link to="/services">
+                  <Button
+                    data-ocid="resources.services.secondary_button"
+                    variant="outline"
+                    className="border-white/30 text-white hover:bg-white/10 hover:border-white/50 font-heading font-semibold px-8 py-3 rounded-none tracking-[0.08em] uppercase text-sm backdrop-blur-sm"
+                  >
+                    Our Services
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </motion.div>
+  );
+}
+
 const resourcesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/resources",
-  component: () => (
-    <ComingSoonPage
-      title="Resources"
-      description="Learn about our management team, manpower, and operational capabilities."
-    />
-  ),
+  component: ResourcesPage,
 });
 
 const contactRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/contact",
   component: ContactPage,
+});
+
+const erpRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/erp",
+  component: ErpPage,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -2783,6 +3357,7 @@ const routeTree = rootRoute.addChildren([
   clientsRoute,
   resourcesRoute,
   contactRoute,
+  erpRoute,
 ]);
 
 const router = createRouter({
