@@ -269,10 +269,10 @@ function FloatingChatButtons() {
             onClick={() => setArattaiOpen((prev) => !prev)}
             aria-label={arattaiOpen ? "Close chat" : "Open quick chat"}
             aria-expanded={arattaiOpen}
-            className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-navy border-2 border-gold ${
+            className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-500 border-2 border-yellow-500 ${
               arattaiOpen
-                ? "bg-navy-dark text-white scale-105"
-                : "bg-navy text-white hover:bg-navy-dark"
+                ? "bg-yellow-500 text-white scale-105"
+                : "bg-yellow-400 text-white hover:bg-yellow-500"
             }`}
           >
             <AnimatePresence mode="wait">
@@ -366,10 +366,8 @@ function Navbar() {
   }
 
   const NAV_LINKS = [
-    { label: "Services", hash: "services", ocid: "nav.services.link" },
     { label: "Clients", hash: "clients", ocid: "nav.clients.link" },
     { label: "Resources", hash: "resources", ocid: "nav.resources.link" },
-    { label: "Contact", hash: "contact", ocid: "nav.contact.link" },
   ];
 
   return (
@@ -468,6 +466,14 @@ function Navbar() {
               </AnimatePresence>
             </div>
 
+            <Link
+              to="/services"
+              data-ocid="nav.services.link"
+              className="nav-link-desktop text-white/85 hover:text-gold font-heading font-semibold text-sm transition-colors duration-200"
+            >
+              Services
+            </Link>
+
             {NAV_LINKS.map((item) => (
               <button
                 type="button"
@@ -479,6 +485,14 @@ function Navbar() {
                 {item.label}
               </button>
             ))}
+            <Link
+              to="/contact"
+              data-ocid="nav.contact.link"
+              onClick={() => setMobileOpen(false)}
+              className="nav-link-desktop text-white/85 hover:text-gold font-heading font-semibold text-sm transition-colors duration-200"
+            >
+              Contact
+            </Link>
           </nav>
 
           {/* Mobile hamburger */}
@@ -571,6 +585,15 @@ function Navbar() {
                 </AnimatePresence>
               </div>
 
+              <Link
+                to="/services"
+                data-ocid="nav.services.link"
+                onClick={() => setMobileOpen(false)}
+                className="block text-left py-3 px-4 rounded-md font-heading font-semibold text-sm text-white/80 hover:text-gold hover:bg-white/5 transition-colors"
+              >
+                Services
+              </Link>
+
               {NAV_LINKS.map((item) => (
                 <button
                   type="button"
@@ -585,6 +608,14 @@ function Navbar() {
                   {item.label}
                 </button>
               ))}
+              <Link
+                to="/contact"
+                data-ocid="nav.contact.link"
+                onClick={() => setMobileOpen(false)}
+                className="block text-left py-3 px-4 rounded-md font-heading font-semibold text-sm text-white/80 hover:text-gold hover:bg-white/5 transition-colors"
+              >
+                Contact
+              </Link>
             </nav>
           </motion.div>
         )}
@@ -603,10 +634,10 @@ function Footer() {
   const QUICK_LINKS = [
     { label: "Home", hash: "home" },
     { label: "About Us", to: "/about" },
-    { label: "Services", hash: "services" },
+    { label: "Services", to: "/services" },
     { label: "Clients", hash: "clients" },
     { label: "Resources", hash: "resources" },
-    { label: "Contact Us", hash: "contact" },
+    { label: "Contact Us", to: "/contact" },
   ];
 
   const SOCIAL_LINKS = [
@@ -1204,18 +1235,21 @@ function ClientsSection() {
             {
               name: "Central Coal Fields Limited",
               abbr: "CCL",
+              logo: "/assets/uploads/Vcpl-Logo-1-2.png",
               desc: "A Miniratna Category-I Central Public Sector Enterprise and subsidiary of Coal India Limited.",
               category: "Public Sector · Coal",
             },
             {
               name: "Damodar Valley Corporation",
               abbr: "DVC",
+              logo: "/assets/uploads/DVC-1-1.png",
               desc: "One of India's oldest multi-purpose river valley development projects, serving power and irrigation.",
               category: "Public Sector · Power",
             },
             {
               name: "BKB Transport Private Limited",
               abbr: "BKB",
+              logo: "/assets/uploads/bkbLogo-3-3.png",
               desc: "A leading private transport and logistics company in the Eastern India mining sector.",
               category: "Private Sector · Transport",
             },
@@ -1231,8 +1265,12 @@ function ClientsSection() {
               <Card className="h-full border-border hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 group bg-card overflow-hidden">
                 <CardContent className="p-7 flex flex-col h-full">
                   <div className="flex items-center gap-4 mb-5">
-                    <div className="w-16 h-16 rounded-xl bg-navy flex items-center justify-center text-white font-display font-black text-lg group-hover:bg-gold group-hover:text-navy transition-all duration-300">
-                      {client.abbr}
+                    <div className="w-20 h-16 rounded-xl bg-white border border-gray-100 flex items-center justify-center overflow-hidden p-1 shadow-sm">
+                      <img
+                        src={client.logo}
+                        alt={`${client.name} logo`}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <div>
                       <span className="text-xs font-heading font-bold text-gold bg-gold/8 px-2.5 py-1 rounded-full border border-gold/20">
@@ -1325,331 +1363,12 @@ function ResourcesSection() {
   );
 }
 
-/* Contact */
+/* Contact form data interface */
 interface ContactFormData {
   name: string;
   email: string;
   phone: string;
   message: string;
-}
-
-function ContactSection() {
-  const { actor } = useActor();
-  const [formData, setFormData] = useState<ContactFormData>({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-  });
-
-  const contactMutation = useMutation({
-    mutationFn: async (data: ContactFormData) => {
-      if (!actor)
-        throw new Error("Service unavailable. Please try again later.");
-      await actor.submitContactForm(
-        data.name,
-        data.email,
-        `${data.message}${data.phone ? ` | Phone: ${data.phone}` : ""}`,
-      );
-    },
-    onSuccess: () => {
-      toast.success("Message sent! We'll get back to you soon.");
-      setFormData({ name: "", email: "", phone: "", message: "" });
-    },
-    onError: (err: Error) => {
-      toast.error(err.message || "Failed to send. Please try again.");
-    },
-  });
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (
-      !formData.name.trim() ||
-      !formData.email.trim() ||
-      !formData.message.trim()
-    ) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
-    contactMutation.mutate(formData);
-  }
-
-  const CONTACT_INFO = [
-    {
-      icon: MapPin,
-      label: "Registered Office",
-      value:
-        "Bermo Magazine Loadhar Bera Basti, Bermo, Bokaro, Jharkhand 829127",
-    },
-    { icon: Phone, label: "Phone", value: "+91-9835410009" },
-    { icon: Mail, label: "Email", value: "hello@shriadyalogistics.com" },
-  ];
-
-  const SOCIAL_LINKS = [
-    {
-      icon: Facebook,
-      label: "Facebook",
-      href: "https://fb.me/shriadyalogistics",
-    },
-    {
-      icon: Instagram,
-      label: "Instagram",
-      href: "https://instagram.com/shriadyalogistics9",
-    },
-    {
-      icon: Twitter,
-      label: "Twitter",
-      href: "https://twitter.com/shriadya",
-    },
-    {
-      icon: Youtube,
-      label: "YouTube",
-      href: "https://youtube.com/@shriadyalogistics",
-    },
-  ];
-
-  return (
-    <section
-      id="contact"
-      className="py-20 lg:py-28 bg-navy-deeper relative overflow-hidden"
-    >
-      {/* Decorative */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gold/5 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/3 rounded-full translate-y-1/2 -translate-x-1/3 pointer-events-none" />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 lg:mb-16">
-          <p className="text-gold font-heading font-bold text-xs tracking-[0.2em] uppercase mb-3">
-            Get In Touch
-          </p>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
-            Contact Us
-          </h2>
-          <p className="mt-4 text-white/50 text-base max-w-2xl mx-auto leading-relaxed">
-            Have a project in mind or need more information? We'd love to hear
-            from you.
-          </p>
-          <div className="w-14 h-1 bg-gold rounded-full mx-auto mt-5" />
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-12 items-start">
-          {/* Contact Info */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <h3 className="font-display text-2xl font-bold text-white mb-8">
-              Reach Out to Us
-            </h3>
-            <div className="space-y-5 mb-8">
-              {CONTACT_INFO.map((info) => (
-                <div key={info.label} className="flex items-start gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-gold/15 border border-gold/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <info.icon className="w-5 h-5 text-gold" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-heading font-bold text-gold uppercase tracking-widest mb-0.5">
-                      {info.label}
-                    </p>
-                    <p className="text-white/70 text-sm leading-relaxed">
-                      {info.value}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <p className="text-xs font-heading font-bold text-white/40 uppercase tracking-widest mb-4">
-                Follow Us
-              </p>
-              <div className="flex gap-3">
-                {SOCIAL_LINKS.map((soc) => (
-                  <a
-                    key={soc.label}
-                    href={soc.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={soc.label}
-                    className="w-10 h-10 rounded-xl bg-white/8 border border-white/10 text-white/50 flex items-center justify-center hover:bg-gold hover:text-navy hover:border-gold transition-all duration-200"
-                  >
-                    <soc.icon className="w-4 h-4" />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* WhatsApp CTA */}
-            <div className="mt-8 bg-white/5 border border-white/10 rounded-xl p-5">
-              <p className="text-white/70 text-sm font-heading font-semibold mb-2">
-                Prefer WhatsApp?
-              </p>
-              <a
-                href="https://wa.me/919835410009"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 text-sm font-heading font-bold text-white bg-[#25D366] px-4 py-2.5 rounded-lg hover:bg-[#1da851] transition-colors"
-              >
-                <WhatsAppIcon className="w-4 h-4" />
-                Chat on WhatsApp
-              </a>
-            </div>
-          </motion.div>
-
-          {/* Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="bg-white rounded-2xl p-8 shadow-2xl"
-          >
-            <h3 className="font-display text-xl font-bold text-navy mb-6">
-              Send Us a Message
-            </h3>
-            <form onSubmit={handleSubmit} noValidate className="space-y-4">
-              <div>
-                <Label
-                  htmlFor="contact-name"
-                  className="font-heading font-semibold text-xs text-foreground/70 uppercase tracking-wider mb-1.5 block"
-                >
-                  Full Name <span className="text-gold">*</span>
-                </Label>
-                <Input
-                  id="contact-name"
-                  data-ocid="contact.form.input"
-                  type="text"
-                  placeholder="Your full name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, name: e.target.value }))
-                  }
-                  disabled={contactMutation.isPending}
-                  className="border-border focus-visible:ring-gold rounded-md"
-                  autoComplete="name"
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="contact-email"
-                  className="font-heading font-semibold text-xs text-foreground/70 uppercase tracking-wider mb-1.5 block"
-                >
-                  Email Address <span className="text-gold">*</span>
-                </Label>
-                <Input
-                  id="contact-email"
-                  data-ocid="contact.form.email.input"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, email: e.target.value }))
-                  }
-                  disabled={contactMutation.isPending}
-                  className="border-border focus-visible:ring-gold rounded-md"
-                  autoComplete="email"
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="contact-phone"
-                  className="font-heading font-semibold text-xs text-foreground/70 uppercase tracking-wider mb-1.5 block"
-                >
-                  Phone Number
-                </Label>
-                <Input
-                  id="contact-phone"
-                  data-ocid="contact.form.phone.input"
-                  type="tel"
-                  placeholder="+91 XXXXX XXXXX"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, phone: e.target.value }))
-                  }
-                  disabled={contactMutation.isPending}
-                  className="border-border focus-visible:ring-gold rounded-md"
-                  autoComplete="tel"
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="contact-message"
-                  className="font-heading font-semibold text-xs text-foreground/70 uppercase tracking-wider mb-1.5 block"
-                >
-                  Message <span className="text-gold">*</span>
-                </Label>
-                <Textarea
-                  id="contact-message"
-                  data-ocid="contact.form.textarea"
-                  placeholder="Tell us about your requirements..."
-                  value={formData.message}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, message: e.target.value }))
-                  }
-                  disabled={contactMutation.isPending}
-                  rows={4}
-                  className="border-border focus-visible:ring-gold rounded-md resize-none"
-                />
-              </div>
-
-              {contactMutation.isPending && (
-                <div
-                  data-ocid="contact.loading_state"
-                  className="flex items-center gap-2 text-sm text-navy/60 font-heading"
-                >
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Sending your message...</span>
-                </div>
-              )}
-              {contactMutation.isSuccess && (
-                <div
-                  data-ocid="contact.success_state"
-                  className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Message sent successfully!</span>
-                </div>
-              )}
-              {contactMutation.isError && (
-                <div
-                  data-ocid="contact.error_state"
-                  className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2"
-                >
-                  <AlertCircle className="w-4 h-4" />
-                  <span>Failed to send. Please try again.</span>
-                </div>
-              )}
-
-              <Button
-                data-ocid="contact.form.submit_button"
-                type="submit"
-                disabled={contactMutation.isPending}
-                className="w-full bg-navy hover:bg-navy-dark text-white font-heading font-bold py-3 rounded-none tracking-[0.08em] uppercase text-sm transition-all duration-200"
-                size="lg"
-              >
-                {contactMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Message
-                  </>
-                )}
-              </Button>
-            </form>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
 }
 
 /* ─────────────────────────────────────────────────────────────── */
@@ -1675,7 +1394,6 @@ function HomePage() {
         <ServicesSection />
         <ClientsSection />
         <ResourcesSection />
-        <ContactSection />
       </main>
       <Footer />
     </motion.div>
@@ -2146,6 +1864,848 @@ function ComingSoonPage({
 }
 
 /* ─────────────────────────────────────────────────────────────── */
+/*  CONTACT PAGE                                                   */
+/* ─────────────────────────────────────────────────────────────── */
+
+function ContactPage() {
+  const { actor } = useActor();
+  const [formData, setFormData] = useState<ContactFormData>({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  useEffect(() => {
+    document.title = "Contact Us — Shri Adya Logistics";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const contactMutation = useMutation({
+    mutationFn: async (data: ContactFormData) => {
+      if (!actor)
+        throw new Error("Service unavailable. Please try again later.");
+      await actor.submitContactForm(
+        data.name,
+        data.email,
+        `${data.message}${data.phone ? ` | Phone: ${data.phone}` : ""}`,
+      );
+    },
+    onSuccess: () => {
+      toast.success("Message sent! We'll get back to you soon.");
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to send. Please try again.");
+    },
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.message.trim()
+    ) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+    contactMutation.mutate(formData);
+  }
+
+  const CONTACT_DETAILS = [
+    {
+      icon: MapPin,
+      label: "Registered Office",
+      value:
+        "Bermo Magazine Loadhar Bera Basti, Bermo, Bokaro, Jharkhand 829127",
+      href: null,
+    },
+    {
+      icon: Mail,
+      label: "Email",
+      value: "hello@shriadyalogistics.com",
+      href: "mailto:hello@shriadyalogistics.com",
+    },
+    {
+      icon: Phone,
+      label: "Contact No",
+      value: "+91-9835410009",
+      href: "tel:+919835410009",
+    },
+  ];
+
+  const SOCIAL_LINKS = [
+    {
+      icon: Facebook,
+      label: "Facebook",
+      handle: "fb.me/shriadyalogistics",
+      href: "https://fb.me/shriadyalogistics",
+      color: "#1877F2",
+    },
+    {
+      icon: Instagram,
+      label: "Instagram",
+      handle: "@shriadyalogistics9",
+      href: "https://instagram.com/shriadyalogistics9",
+      color: "#E4405F",
+    },
+    {
+      icon: Twitter,
+      label: "Twitter / X",
+      handle: "/shriadya",
+      href: "https://twitter.com/shriadya",
+      color: "#1DA1F2",
+    },
+    {
+      icon: Youtube,
+      label: "YouTube",
+      handle: "@shriadyalogistics",
+      href: "https://youtube.com/@shriadyalogistics",
+      color: "#FF0000",
+    },
+  ];
+
+  return (
+    <motion.div
+      key="contact-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Page Banner */}
+      <section className="relative bg-navy-deeper pt-28 pb-16 lg:pt-32 lg:pb-20 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gold/5 rounded-full -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/3 rounded-full translate-y-1/2 -translate-x-1/4" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex items-center gap-1.5 text-white/40 text-sm font-heading mb-6"
+          >
+            <Link to="/" className="hover:text-gold transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <span className="text-gold font-semibold">Contact Us</span>
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4"
+          >
+            Contact Us
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-white/60 text-lg max-w-2xl leading-relaxed"
+          >
+            We'd love to hear from you. Reach out to us for inquiries,
+            partnerships or any information about our services.
+          </motion.p>
+        </div>
+      </section>
+
+      <main className="bg-background">
+        {/* Contact Details + Map */}
+        <section className="py-16 lg:py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 items-start">
+              {/* Left: Info + Social + Map */}
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.1 }}
+              >
+                <p className="text-gold font-heading font-bold text-xs tracking-[0.2em] uppercase mb-3">
+                  Get In Touch
+                </p>
+                <h2 className="font-display text-3xl sm:text-4xl font-bold text-navy leading-tight mb-2">
+                  Our Office
+                </h2>
+                <div className="w-14 h-1 bg-gold rounded-full mb-8" />
+
+                {/* Contact Details */}
+                <div className="space-y-5 mb-10">
+                  {CONTACT_DETAILS.map((info) => (
+                    <div
+                      key={info.label}
+                      className="flex items-start gap-4 p-4 rounded-xl bg-secondary/40 border border-border hover:border-gold/30 transition-colors"
+                    >
+                      <div className="w-11 h-11 rounded-xl bg-navy flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <info.icon className="w-5 h-5 text-gold" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-heading font-bold text-navy/50 uppercase tracking-widest mb-0.5">
+                          {info.label}
+                        </p>
+                        {info.href ? (
+                          <a
+                            href={info.href}
+                            className="text-navy font-heading font-semibold text-sm leading-relaxed hover:text-gold transition-colors"
+                          >
+                            {info.value}
+                          </a>
+                        ) : (
+                          <p className="text-navy font-heading font-semibold text-sm leading-relaxed">
+                            {info.value}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Social Media */}
+                <div className="mb-10">
+                  <p className="font-display font-bold text-navy text-lg mb-5">
+                    Follow Us
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {SOCIAL_LINKS.map((soc) => (
+                      <a
+                        key={soc.label}
+                        href={soc.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-ocid={`contact.social.${soc.label.toLowerCase().replace(/[^a-z0-9]/g, "")}.link`}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-border bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
+                      >
+                        <div
+                          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: `${soc.color}15` }}
+                        >
+                          <soc.icon
+                            className="w-4 h-4"
+                            style={{ color: soc.color }}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-heading font-bold text-navy/50 uppercase tracking-wider leading-none mb-0.5">
+                            {soc.label}
+                          </p>
+                          <p className="text-xs font-heading font-semibold text-navy truncate group-hover:text-gold transition-colors">
+                            {soc.handle}
+                          </p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Google Map */}
+                <div>
+                  <p className="font-display font-bold text-navy text-lg mb-5">
+                    Our Location
+                  </p>
+                  <div
+                    data-ocid="contact.map_marker"
+                    className="rounded-2xl overflow-hidden border border-border shadow-md"
+                  >
+                    <iframe
+                      title="Shri Adya Logistics Office Location"
+                      src="https://maps.google.com/maps?q=Bermo+Magazine+Loadhar+Bera+Basti+Bermo+Bokaro+Jharkhand+829127&output=embed&iwloc=&z=15"
+                      width="100%"
+                      height="320"
+                      style={{ border: 0, display: "block" }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <MapPin className="w-3 h-3 text-gold flex-shrink-0" />
+                      Bermo Magazine Loadhar Bera Basti, Bermo, Bokaro,
+                      Jharkhand 829127
+                    </p>
+                    <a
+                      href="https://maps.app.goo.gl/GLAy2pCMuHtPotCt8"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-ocid="contact.map_marker"
+                      className="text-xs font-heading font-semibold text-gold hover:underline flex items-center gap-1 flex-shrink-0 ml-3"
+                    >
+                      Open in Maps
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Right: Contact Form */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="bg-navy-deeper rounded-2xl p-8 shadow-2xl sticky top-24"
+              >
+                <p className="text-gold font-heading font-bold text-xs tracking-[0.2em] uppercase mb-3">
+                  Send a Message
+                </p>
+                <h3 className="font-display text-2xl font-bold text-white mb-6">
+                  Write to Us
+                </h3>
+
+                <form onSubmit={handleSubmit} noValidate className="space-y-4">
+                  <div>
+                    <Label
+                      htmlFor="cp-contact-name"
+                      className="font-heading font-semibold text-xs text-white/60 uppercase tracking-wider mb-1.5 block"
+                    >
+                      Full Name <span className="text-gold">*</span>
+                    </Label>
+                    <Input
+                      id="cp-contact-name"
+                      data-ocid="contact.form.input"
+                      type="text"
+                      placeholder="Your full name"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, name: e.target.value }))
+                      }
+                      disabled={contactMutation.isPending}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-gold rounded-md"
+                      autoComplete="name"
+                    />
+                  </div>
+
+                  <div>
+                    <Label
+                      htmlFor="cp-contact-email"
+                      className="font-heading font-semibold text-xs text-white/60 uppercase tracking-wider mb-1.5 block"
+                    >
+                      Email Address <span className="text-gold">*</span>
+                    </Label>
+                    <Input
+                      id="cp-contact-email"
+                      data-ocid="contact.form.email.input"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, email: e.target.value }))
+                      }
+                      disabled={contactMutation.isPending}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-gold rounded-md"
+                      autoComplete="email"
+                    />
+                  </div>
+
+                  <div>
+                    <Label
+                      htmlFor="cp-contact-phone"
+                      className="font-heading font-semibold text-xs text-white/60 uppercase tracking-wider mb-1.5 block"
+                    >
+                      Phone Number
+                    </Label>
+                    <Input
+                      id="cp-contact-phone"
+                      data-ocid="contact.form.phone.input"
+                      type="tel"
+                      placeholder="+91 XXXXX XXXXX"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, phone: e.target.value }))
+                      }
+                      disabled={contactMutation.isPending}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-gold rounded-md"
+                      autoComplete="tel"
+                    />
+                  </div>
+
+                  <div>
+                    <Label
+                      htmlFor="cp-contact-message"
+                      className="font-heading font-semibold text-xs text-white/60 uppercase tracking-wider mb-1.5 block"
+                    >
+                      Message <span className="text-gold">*</span>
+                    </Label>
+                    <Textarea
+                      id="cp-contact-message"
+                      data-ocid="contact.form.textarea"
+                      placeholder="Tell us about your requirements..."
+                      value={formData.message}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, message: e.target.value }))
+                      }
+                      disabled={contactMutation.isPending}
+                      rows={5}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-gold rounded-md resize-none"
+                    />
+                  </div>
+
+                  {contactMutation.isPending && (
+                    <div
+                      data-ocid="contact.loading_state"
+                      className="flex items-center gap-2 text-sm text-white/60 font-heading"
+                    >
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Sending your message...</span>
+                    </div>
+                  )}
+                  {contactMutation.isSuccess && (
+                    <div
+                      data-ocid="contact.success_state"
+                      className="flex items-center gap-2 text-sm text-green-300 bg-green-900/30 border border-green-700/40 rounded-md px-3 py-2"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Message sent successfully!</span>
+                    </div>
+                  )}
+                  {contactMutation.isError && (
+                    <div
+                      data-ocid="contact.error_state"
+                      className="flex items-center gap-2 text-sm text-red-300 bg-red-900/30 border border-red-700/40 rounded-md px-3 py-2"
+                    >
+                      <AlertCircle className="w-4 h-4" />
+                      <span>Failed to send. Please try again.</span>
+                    </div>
+                  )}
+
+                  <Button
+                    data-ocid="contact.form.submit_button"
+                    type="submit"
+                    disabled={contactMutation.isPending}
+                    className="w-full bg-gold hover:bg-gold/90 text-navy font-heading font-bold py-3 rounded-none tracking-[0.08em] uppercase text-sm transition-all duration-200"
+                    size="lg"
+                  >
+                    {contactMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Send Message
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  SERVICES PAGE                                                  */
+/* ─────────────────────────────────────────────────────────────── */
+
+function ServicesPage() {
+  useEffect(() => {
+    document.title = "Services — Shri Adya Logistics";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const EXPLOSIVE_FEATURES = [
+    "Transport of all types of Explosives & Accessories",
+    "Transport to Licensed Locations",
+    "Government Overburden & Ore Transportation",
+    "Fleet capacity: 1 Metric Ton – 15 Metric Tons",
+    "Dedicated approved fleet of trucks",
+    "Compliant with all applicable government requirements",
+  ];
+
+  const LOGISTICS_FEATURES = [
+    "Mineral transport from multiple loading points across India",
+    "Transportation from different mines nationwide",
+    "Tippers, Heavy Duty Trucks, Rack Loading & Shipment",
+    "Premium quality iron ore supply to global industry",
+    "Compliant with fundamental mining rules and regulations",
+    "Cost-effective guaranteed assistance",
+  ];
+
+  const CLIENTS = [
+    {
+      name: "Central Coal Fields Limited",
+      logo: "/assets/uploads/Vcpl-Logo-3-2.png",
+      category: "Public Sector · Coal",
+      desc: "A Miniratna Category-I Central Public Sector Enterprise and subsidiary of Coal India Limited.",
+    },
+    {
+      name: "Damodar Valley Corporation",
+      logo: "/assets/uploads/DVC-3-1.png",
+      category: "Public Sector · Power",
+      desc: "One of India's oldest multi-purpose river valley development projects, serving power and irrigation.",
+    },
+    {
+      name: "BKB Transport Private Limited",
+      logo: "/assets/uploads/bkbLogo-5-3.png",
+      category: "Private Sector · Transport",
+      desc: "A leading private transport and logistics company in the Eastern India mining sector.",
+    },
+  ];
+
+  return (
+    <motion.div
+      key="services-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Hero Banner */}
+      <section className="relative bg-navy-deeper pt-28 pb-16 lg:pt-32 lg:pb-20 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gold/5 rounded-full -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/3 rounded-full translate-y-1/2 -translate-x-1/4" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 30% 60%, white 1px, transparent 1px), radial-gradient(circle at 70% 30%, white 1px, transparent 1px)",
+              backgroundSize: "50px 50px",
+            }}
+          />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex items-center gap-1.5 text-white/40 text-sm font-heading mb-6"
+          >
+            <Link to="/" className="hover:text-gold transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <span className="text-gold font-semibold">Services</span>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <p className="text-gold font-heading font-bold text-xs tracking-[0.2em] uppercase mb-3">
+              What We Offer
+            </p>
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-5">
+              Our Services
+            </h1>
+            <div className="bg-white/5 border-l-4 border-gold rounded-r-xl px-6 py-4 max-w-2xl">
+              <p className="text-white/80 text-base leading-relaxed italic font-heading">
+                "Service is what we sell. It is our quality of service that will
+                set us apart from our competition. We will proactively
+                communicate with our customers and drivers so their expectations
+                are fulfilled."
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <main className="bg-background">
+        {/* Explosive Transportation */}
+        <section className="py-20 lg:py-28">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-start">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+              >
+                <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/25 text-gold px-4 py-1.5 rounded-full text-xs font-heading font-bold tracking-widest uppercase mb-5">
+                  <Zap className="w-3.5 h-3.5" />
+                  Core Service
+                </div>
+                <h2 className="font-display text-3xl sm:text-4xl font-bold text-navy leading-tight mb-2">
+                  Explosive Transportation
+                </h2>
+                <div className="w-14 h-1 bg-gold rounded-full mb-6" />
+                <p className="text-foreground/70 leading-relaxed mb-4 text-[15px]">
+                  SHRI ADYA LOGISTICS is an Explosive Transportation Company.
+                  The Company is mainly into site Explosive Supply for mining
+                  and has a well designed and dedicated approved fleet of trucks
+                  ranging from{" "}
+                  <strong className="text-navy font-semibold">
+                    1 Metric Ton – 15 Metric Tons
+                  </strong>{" "}
+                  capacity for transporting all types of Explosives, Accessories
+                  to License locations and Government transportation of
+                  'overburden' and ore.
+                </p>
+                <p className="text-foreground/70 leading-relaxed mb-8 text-[15px]">
+                  In the past few years, SHRI ADYA LOGISTICS has undergone rapid
+                  changes with activities compounding throughout the country and
+                  overseas.
+                </p>
+                <ul className="space-y-3">
+                  {EXPLOSIVE_FEATURES.map((f) => (
+                    <li key={f} className="flex items-start gap-3">
+                      <span className="w-5 h-5 rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle2 className="w-3 h-3 text-gold" />
+                      </span>
+                      <span className="text-sm text-foreground/75 leading-relaxed">
+                        {f}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+                className="space-y-5"
+              >
+                <div className="bg-navy rounded-2xl p-8 text-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-gold/10 rounded-full -translate-y-20 translate-x-20 pointer-events-none" />
+                  <div className="relative z-10">
+                    <div className="w-16 h-16 rounded-xl bg-gold/20 border border-gold/30 flex items-center justify-center mb-5">
+                      <Truck className="w-8 h-8 text-gold" />
+                    </div>
+                    <h3 className="font-display text-xl font-bold text-white mb-3">
+                      Our Fleet
+                    </h3>
+                    <p className="text-white/70 text-sm leading-relaxed mb-5">
+                      A dedicated approved fleet of trucks specifically designed
+                      and maintained for safe explosive transportation, meeting
+                      all regulatory requirements.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { value: "1 MT", label: "Minimum Capacity" },
+                        { value: "15 MT", label: "Maximum Capacity" },
+                        { value: "100%", label: "Regulatory Compliant" },
+                        { value: "Pan India", label: "Service Coverage" },
+                      ].map((stat) => (
+                        <div
+                          key={stat.label}
+                          className="bg-white/8 rounded-xl p-3 text-center"
+                        >
+                          <p className="font-display font-bold text-gold text-lg">
+                            {stat.value}
+                          </p>
+                          <p className="text-white/55 text-xs font-heading mt-0.5">
+                            {stat.label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gold/8 border border-gold/20 rounded-2xl p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Shield className="w-5 h-5 text-gold flex-shrink-0" />
+                    <p className="font-display font-bold text-navy text-sm">
+                      Safety Commitment
+                    </p>
+                  </div>
+                  <p className="text-foreground/70 text-sm leading-relaxed">
+                    "Safety is our first priority. We will achieve this through
+                    training our drivers and employees to focus on driver
+                    compliance with all applicable government requirements."
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Logistics */}
+        <section className="py-20 lg:py-28 bg-navy relative overflow-hidden">
+          <div
+            className="absolute inset-0 opacity-5 pointer-events-none"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)",
+              backgroundSize: "60px 60px",
+            }}
+          />
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-start">
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+                className="lg:order-2"
+              >
+                <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-gold px-4 py-1.5 rounded-full text-xs font-heading font-bold tracking-widest uppercase mb-5">
+                  <Target className="w-3.5 h-3.5" />
+                  Extended Service
+                </div>
+                <h2 className="font-display text-3xl sm:text-4xl font-bold text-white leading-tight mb-2">
+                  Logistics & Minerals
+                </h2>
+                <div className="w-14 h-1 bg-gold rounded-full mb-6" />
+                <p className="text-white/75 leading-relaxed mb-4 text-[15px]">
+                  Here at Shri Adya Logistics, we also transport Minerals from
+                  different loading points in India. We also carry out
+                  transportation from different mines from many other areas.
+                </p>
+                <p className="text-white/75 leading-relaxed mb-4 text-[15px]">
+                  Today we take pride in announcing that we successfully
+                  transport the premium quality materials all across the
+                  country. Our logistic division abides by all the imperative
+                  rules and regulations as per the fundamental mining rules.
+                </p>
+                <p className="text-white/75 leading-relaxed mb-8 text-[15px]">
+                  We nestle Tippers, Heavy Duty Truck, Rack loading, shipment,
+                  etc. We aim at securing our future together as a successful
+                  supplier of the best quality iron ore products to the global
+                  industry. We can provide you the guaranteed assistance without
+                  burning a hole in your pocket.
+                </p>
+                <ul className="space-y-3">
+                  {LOGISTICS_FEATURES.map((f) => (
+                    <li key={f} className="flex items-start gap-3">
+                      <span className="w-5 h-5 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle2 className="w-3 h-3 text-gold" />
+                      </span>
+                      <span className="text-sm text-white/65 leading-relaxed">
+                        {f}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+                className="lg:order-1 space-y-5"
+              >
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
+                  <div className="w-16 h-16 rounded-xl bg-gold/15 border border-gold/25 flex items-center justify-center mb-5">
+                    <MapPin className="w-8 h-8 text-gold" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-white mb-3">
+                    Nationwide Coverage
+                  </h3>
+                  <p className="text-white/65 text-sm leading-relaxed mb-5">
+                    From mineral-rich Jharkhand, Odisha and West Bengal to mines
+                    across India — we connect loading points to destinations
+                    reliably and efficiently.
+                  </p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { icon: "🏗️", label: "Tippers" },
+                      { icon: "🚛", label: "Heavy Duty Trucks" },
+                      { icon: "📦", label: "Rack Loading" },
+                      { icon: "🚢", label: "Shipment" },
+                      { icon: "⛏️", label: "Mining Routes" },
+                      { icon: "🌍", label: "Pan India" },
+                    ].map((item) => (
+                      <div
+                        key={item.label}
+                        className="bg-white/8 rounded-xl p-3 text-center"
+                      >
+                        <span className="text-xl block mb-1">{item.icon}</span>
+                        <p className="text-white/60 text-xs font-heading font-semibold">
+                          {item.label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Clients */}
+        <section className="py-20 lg:py-28 bg-secondary/40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionTitle
+              eyebrow="Who We Serve"
+              title="Our Trusted Clients"
+              subtitle="Trusted by leading public and private sector organizations across Eastern India."
+            />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {CLIENTS.map((client, i) => (
+                <motion.div
+                  key={client.name}
+                  data-ocid={`services.client.item.${i + 1}`}
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.12 }}
+                >
+                  <Card className="h-full border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group bg-card overflow-hidden">
+                    <CardContent className="p-7 flex flex-col h-full">
+                      <div className="flex items-center gap-4 mb-5">
+                        <div className="w-20 h-16 rounded-xl bg-white border border-gray-100 flex items-center justify-center overflow-hidden p-1 shadow-sm">
+                          <img
+                            src={client.logo}
+                            alt={`${client.name} logo`}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-xs font-heading font-bold text-gold bg-gold/8 px-2.5 py-1 rounded-full border border-gold/20">
+                            {client.category}
+                          </span>
+                        </div>
+                      </div>
+                      <h3 className="font-display font-bold text-navy text-lg mb-2 leading-snug">
+                        {client.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                        {client.desc}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="py-16 lg:py-20 bg-navy-deeper">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+            >
+              <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mb-4">
+                Ready to Work With Us?
+              </h2>
+              <p className="text-white/55 text-base leading-relaxed max-w-xl mx-auto mb-8">
+                Contact us today to discuss your explosive transportation or
+                logistics requirements. We offer reliable, cost-effective
+                solutions tailored to your needs.
+              </p>
+              <Link to="/contact">
+                <Button
+                  data-ocid="services.contact.primary_button"
+                  className="bg-gold hover:bg-gold/90 text-navy font-heading font-bold px-8 py-3 rounded-none tracking-[0.08em] uppercase text-sm"
+                >
+                  Get In Touch
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
 /*  ROOT LAYOUT                                                    */
 /* ─────────────────────────────────────────────────────────────── */
 
@@ -2185,12 +2745,7 @@ const aboutRoute = createRoute({
 const servicesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/services",
-  component: () => (
-    <ComingSoonPage
-      title="Services"
-      description="Detailed information about our Explosive Transportation and Logistics services."
-    />
-  ),
+  component: ServicesPage,
 });
 
 const clientsRoute = createRoute({
@@ -2218,12 +2773,7 @@ const resourcesRoute = createRoute({
 const contactRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/contact",
-  component: () => (
-    <ComingSoonPage
-      title="Contact Us"
-      description="Get in touch with our team for inquiries, partnerships, or more information."
-    />
-  ),
+  component: ContactPage,
 });
 
 const routeTree = rootRoute.addChildren([
